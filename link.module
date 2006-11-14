@@ -313,35 +313,31 @@ function link_cleanup_url ($url, $protocol = "http") {
  * the following attributes: protocol, hostname, ip, and port.
  */
 function link_validate_link($text) {
-  if (!preg_match(
+  if (preg_match(
     // protocol
     '/^([a-z0-9][a-z0-9\.\-_]*:\/\/)?'.
-  '('.
-    // domains
+    '('.
+      // domains
       '(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|[a-z]{2}))'.
       // OR ip addresses
       '|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'.
-  ')'.
+    ')'.
     // port number
     '(:([0-9]{1,4}))?'.
     // the rest of the path
     "(\/[a-z0-9_\-\.~+%=&,$'():;*@]+)*".
-    // anchors
-    "\/?#?[a-z0-9_\-\.~+%=&,$'():;*@]*".
-    // the query string
-    "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@]*)?".
     // forward slash 0 or 1 times
     '(\/)?'.
+    // anchors
+    "(#[a-z0-9_\-\.~+%=&,$'():;*@]*)?".
+    // query string
+    "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@]*)?".
     // end of the expression, case insensitive
     '$/i', $text, $m)) {
-    return false;
+    dsm($m);
+    return true;
   }
   else {
-    $url = new stdClass();
-    $url->protocol = $m[2];
-    $url->hostname = strtolower($m[5]).strtolower($m[7]);
-    $url->ip = $m[8];
-    $url->port = $m[10];
-    return $url;
+    return false;
   }
 }
