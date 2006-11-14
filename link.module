@@ -249,6 +249,9 @@ function link_field_formatter_info() {
  *
  */
 function link_field_formatter($field, $item, $formatter) {
+  if (empty($item['url'])) {
+    return '';
+  }
   
   if ($formatter == 'plain') {
     return check_plain($item['url']);
