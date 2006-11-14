@@ -157,7 +157,7 @@ function link_widget($op, &$node, $field, &$node_field) {
       foreach($node_field as $delta => $value) {
         if ($value['url']) {
           // Validate the link
-          if (!link_validate_link($value['url'])) {
+          if (!link_validate_link(trim($value['url']))) {
             form_set_error($field['field_name'] .']['. $delta. '][value][url', t('Not a valid URL.'));
           }
           // Require a title for the link if necessary
@@ -226,6 +226,8 @@ function _link_widget_process (&$node_field, $delta = 0) {
   if (!$node_field['attributes']['target'] || $node_field['attributes']['target'] == "default") {
     unset($node_field['attributes']['target']);
   }
+  // Trim whitespace from URL
+  $node_field['url'] = trim($node_field['url']);
 }
 
 /**
