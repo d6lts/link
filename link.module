@@ -80,15 +80,15 @@ function link_field_settings($op, $field) {
         'url' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''"),
         'title' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''"),
         'attributes' => array('type' => 'mediumtext', 'not null' => TRUE, 'default' => "''"),
-        );
+      );
 
     case 'filters':
       return array(
-          'default' => array(
-            'operator' => 'views_handler_operator_like',
-            'handler' => 'views_handler_filter_like',
-          ),
-        );
+        'default' => array(
+          'operator' => 'views_handler_operator_like',
+          'handler' => 'views_handler_filter_like',
+        ),
+      );
 
   }
 }
@@ -157,17 +157,17 @@ function link_widget($op, &$node, $field, &$node_field) {
       foreach($node_field as $delta => $value) {
         if ($value['url']) {
           // Validate the link
-          if (!link_validate_link(trim($value['url']))) {
-            form_set_error($field['field_name'] .']['. $delta. '][value][url', t('Not a valid URL.'));
+          if (link_validate_url(trim($value['url'])) == FALSE) {
+            form_set_error($field['field_name'] .']['. $delta. '][url', t('Not a valid URL.'));
           }
           // Require a title for the link if necessary
           elseif ($field['title'] == 'required' && strlen(trim($value['title'])) == 0) {
-            form_set_error($field['field_name'] .']['. $delta. '][value][title', t('Titles are required for all links.'));
+            form_set_error($field['field_name'] .']['. $delta. '][title', t('Titles are required for all links.'));
           }
         }
         // Require a link if we have a title
         elseif (strlen($value['title']) > 0) {
-          form_set_error($field['field_name'] .']['. $delta. '][value][link', t('You cannot enter a title without a link.'));
+          form_set_error($field['field_name'] .']['. $delta. '][link', t('You cannot enter a title without a link.'));
         }
       }
       return;
@@ -276,13 +276,26 @@ function link_field_formatter($field, $item, $formatter) {
       }
     }
   }
+  
+  $url = link_cleanup_url($item['url']);
+      
+  if (strpos($url, '#') !== FALSE) {
+    $fragment = substr($url, strpos($url, '#') + 1);
+    $url = substr($url, 0, strpos($url, '#'));
+  }
+  if (strpos($url, '?') !== FALSE) {
+    $query = substr($url, strpos($url, '?') + 1);
+    $url = substr($url, 0, strpos($url, '?'));
+  }
+  
   // Build the link with a title
   if (strlen(trim($item['title']))) {
-    $output = l($item['title'],link_cleanup_url($item['url']),$attributes);
+    $output = l($item['title'], $url, $attributes, $query, $fragment);
   }
   // Build the link with the URL as the title (max 80 characters)
   else {
-    $output = l(strlen($item['url']) > 80 ? substr($item['url'],0,80)."..." : $item['url'],link_cleanup_url($item['url']),$attributes);
+    $display_url = url($url, $query, $fragment, TRUE);
+    $output = l(strlen($display_url) > 80 ? substr($display_url,0,80)."..." : $display_url, $url, $attributes, $query, $fragment);
   }
   return $output;
 }
@@ -296,18 +309,20 @@ function link_field_formatter($field, $item, $formatter) {
  */
 function link_cleanup_url ($url, $protocol = "http") {
   $url = trim($url);
-  
-  // Check if there is no protocol specified
-  $protocol_match = preg_match("/^([a-z0-9][a-z0-9\.\-_]*:\/\/)/i",$url);
-  if (empty($protocol_match)) {
-    // But should it be? Add an automatic http:// if it starts with a domain name
-    $domain_match = preg_match('/^(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|[a-z]{2}))/i',$url);
-    if (!empty($domain_match)) {
-      $url = $protocol."://".$url;
+  $type = link_validate_url($url);
+  if ($type == 1) {
+    // Check if there is no protocol specified
+    $protocol_match = preg_match("/^([a-z0-9][a-z0-9\.\-_]*:\/\/)/i",$url);
+    if (empty($protocol_match)) {
+      // But should it be? Add an automatic http:// if it starts with a domain name
+      $domain_match = preg_match('/^(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|[a-z]{2}))/i',$url);
+      if (!empty($domain_match)) {
+        $url = $protocol."://".$url;
+      }
     }
   }
   
-  return check_url($url);
+  return $url;
 }
 
 /**
@@ -317,32 +332,46 @@ function link_cleanup_url ($url, $protocol = "http") {
  * @return mixed Returns boolean FALSE if the URL is not valid. On success, returns an object with
  * the following attributes: protocol, hostname, ip, and port.
  */
-function link_validate_link($text) {
-  if (preg_match(
-    // protocol
-    '/^([a-z0-9][a-z0-9\.\-_]*:\/\/)?'.
-    '('.
-      // domains
-      '(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|[a-z]{2}))'.
-      // OR ip addresses
-      '|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'.
-    ')'.
-    // port number
-    '(:([0-9]{1,4}))?'.
-    // the rest of the path
-    "(\/[a-z0-9_\-\.~+%=&,$'():;*@]+)*".
-    // forward slash 0 or 1 times
-    '(\/)?'.
-    // anchors
-    "(#[a-z0-9_\-\.~+%=&,$'():;*@]*)?".
-    // query string
-    "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@]*)?".
-    // end of the expression, case insensitive
-    '$/i', $text, $m)) {
-    dsm($m);
-    return true;
+function link_validate_url($text) {
+  static $allowed_protocols;
+  if (!isset($allowed_protocols)) {
+    $allowed_protocols = implode("|",variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal')));
+  } 
+  
+  $external_pattern = 
+  // protocol
+  '/^(' . $allowed_protocols . ':\/\/)?'.
+  '('.
+    // domains
+    '(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|[a-z]{2}))'.
+    // OR ip addresses
+    '|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'.
+  ')'.
+  // port number
+  '(:([0-9]{1,4}))?';
+  
+  // Starting path
+  $internal_pattern = "/^([a-z0-9_\-+]+)";
+  
+  // the rest of the path
+  $end = "(\/[a-z0-9_\-\.~+%=&,$'():;*@]+)*".
+  // forward slash 0 or 1 times
+  '(\/)?'.
+  // query string
+  "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@]*)?".
+  // anchors
+  "(#[a-z0-9_\-\.~+%=&,$'():;*@]*)?".
+  // end of the expression, case insensitive
+  '$/i';
+  
+  if (preg_match($external_pattern . $end, $text, $m)) {
+    return 1;
   }
-  else {
-    return false;
+  elseif (preg_match($internal_pattern . $end, $text, $m)) {
+    return 2;
   }
+  elseif (strpos($text, '<front>') === 0) {
+    return 3;
+  }
+  return FALSE;
 }
