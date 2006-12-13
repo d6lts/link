@@ -1,5 +1,0 @@
-; $Id$
-name = Link
-description = Defines simple link field types.
-dependencies = content
-package = CCK
