@@ -303,9 +303,14 @@ function link_cleanup_url ($url, $protocol = "http") {
  * the following attributes: protocol, hostname, ip, and port.
  */
 function link_validate_link($text) {
+  static $allowed_protocols;
+  if (!isset($allowed_protocols)) {
+    $allowed_protocols = implode("|",variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal')));
+  } 
+  
   if (!preg_match(
     // protocol
-    '/^([a-z0-9][a-z0-9\.\-_]*:\/\/)?'.
+    '/^((' . $allowed_protocols . '):\/\/)?'.
   '('.
     // domains
       '(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|[a-z]{2}))'.
