@@ -340,7 +340,7 @@ function link_validate_url($text) {
   
   $external_pattern = 
   // protocol
-  '/^(' . $allowed_protocols . ':\/\/)?'.
+  '/^((' . $allowed_protocols . '):\/\/)?'.
   '('.
     // domains
     '(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|[a-z]{2}))'.
