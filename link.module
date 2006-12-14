@@ -147,7 +147,7 @@ function link_widget($op, &$node, $field, &$node_field) {
       foreach($node_field as $delta => $value) {
         if ($value['url']) {
           // Validate the link
-          if (!link_validate_link($value['url'])) {
+          if (link_validate_url(trim($value['url'])) == FALSE) {
             form_set_error($field['field_name'] .']['. $delta. '][value][url', t('Not a valid URL.'));
           }
           // Require a title for the link if necessary
@@ -281,18 +281,20 @@ function link_field_formatter($field, $item, $formatter) {
  */
 function link_cleanup_url ($url, $protocol = "http") {
   $url = trim($url);
-  
-  // Check if there is no protocol specified
-  $protocol_match = preg_match("/^([a-z0-9][a-z0-9\.\-_]*:\/\/)/i",$url);
-  if (empty($protocol_match)) {
-    // But should it be? Add an automatic http:// if it starts with a domain name
-    $domain_match = preg_match('/^(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|[a-z]{2}))/i',$url);
-    if (!empty($domain_match)) {
-      $url = $protocol."://".$url;
+  $type = link_validate_url($url);
+  if ($type == 1) {
+    // Check if there is no protocol specified
+    $protocol_match = preg_match("/^([a-z0-9][a-z0-9\.\-_]*:\/\/)/i",$url);
+    if (empty($protocol_match)) {
+      // But should it be? Add an automatic http:// if it starts with a domain name
+      $domain_match = preg_match('/^(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|[a-z]{2}))/i',$url);
+      if (!empty($domain_match)) {
+        $url = $protocol."://".$url;
+      }
     }
   }
   
-  return check_url($url);
+  return $url;
 }
 
 /**
@@ -302,41 +304,46 @@ function link_cleanup_url ($url, $protocol = "http") {
  * @return mixed Returns boolean FALSE if the URL is not valid. On success, returns an object with
  * the following attributes: protocol, hostname, ip, and port.
  */
-function link_validate_link($text) {
+function link_validate_url($text) {
   static $allowed_protocols;
   if (!isset($allowed_protocols)) {
     $allowed_protocols = implode("|",variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal')));
   } 
   
-  if (!preg_match(
-    // protocol
-    '/^((' . $allowed_protocols . '):\/\/)?'.
+  $external_pattern = 
+  // protocol
+  '/^((' . $allowed_protocols . '):\/\/)?'.
   '('.
     // domains
-      '(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|[a-z]{2}))'.
-      // OR ip addresses
-      '|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'.
+    '(([a-z0-9]([a-z0-9\-_]*\.)+)(aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|[a-z]{2}))'.
+    // OR ip addresses
+    '|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'.
   ')'.
-    // port number
-    '(:([0-9]{1,4}))?'.
-    // the rest of the path
-    "(\/[a-z0-9_\-\.~+%=&,$'():;*@]+)*".
-    // anchors
-    "\/?#?[a-z0-9_\-\.~+%=&,$'():;*@]*".
-    // the query string
-    "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@]*)?".
-    // forward slash 0 or 1 times
-    '(\/)?'.
-    // end of the expression, case insensitive
-    '$/i', $text, $m)) {
-    return false;
+  // port number
+  '(:([0-9]{1,4}))?';
+  
+  // Starting path
+  $internal_pattern = "/^([a-z0-9_\-+]+)";
+  
+  // the rest of the path
+  $end = "(\/[a-z0-9_\-\.~+%=&,$'():;*@]+)*".
+  // forward slash 0 or 1 times
+  '(\/)?'.
+  // query string
+  "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@]*)?".
+  // anchors
+  "(#[a-z0-9_\-\.~+%=&,$'():;*@]*)?".
+  // end of the expression, case insensitive
+  '$/i';
+  
+  if (preg_match($external_pattern . $end, $text, $m)) {
+    return 1;
   }
-  else {
-    $url = new stdClass();
-    $url->protocol = $m[2];
-    $url->hostname = strtolower($m[5]).strtolower($m[7]);
-    $url->ip = $m[8];
-    $url->port = $m[10];
-    return $url;
+  elseif (preg_match($internal_pattern . $end, $text, $m)) {
+    return 2;
   }
+  elseif (strpos($text, '<front>') === 0) {
+    return 3;
+  }
+  return FALSE;
 }
