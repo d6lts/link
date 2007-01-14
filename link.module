@@ -88,13 +88,18 @@ function link_field_settings($op, $field) {
  */
 function link_field($op, &$node, $field, &$items, $teaser, $page) {
   switch ($op) {
-
     case 'view':
       foreach ($items as $delta => $item) {
-        $items[$delta]['view'] = content_format($field, $item, 'default', $node);
+        $items[$delta]['attributes'] = unserialize($item['attributes']);
+        $items[$delta]['view'] = content_format($field, $items[$delta], 'default', $node);
       }
       return theme('field', $node, $field, $items, $teaser, $page);
-    break;
+      break;
+    case 'submit':
+      foreach ($items as $delta => $item) {
+        $items[$delta]['attributes'] = serialize($item['attributes']);
+      }
+      break;
   }
 }
 
