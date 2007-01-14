@@ -25,7 +25,7 @@ function link_update_1() {
         $columns = array(
           'url' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''"),
           'title' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''"),
-          'attributes' => array('type' => 'mediumtext', 'not null' => TRUE, 'default' => "''"),
+          'attributes' => array('type' => 'mediumtext', 'not null' => FALSE),
         );
         content_alter_db_field(array(), array(), $field, $columns);
         $db_info = content_database_info($field);
