@@ -98,17 +98,17 @@ function link_field_settings($op, $field) {
  */
 function link_field($op, &$node, $field, &$items, $teaser, $page) {
   switch ($op) {
-    case 'view':
+    case 'load':
       foreach ($items as $delta => $item) {
         $items[$delta]['attributes'] = unserialize($item['attributes']);
+      }
+      return $items;
+      break;
+    case 'view':
+      foreach ($items as $delta => $item) {
         $items[$delta]['view'] = content_format($field, $items[$delta], 'default', $node);
       }
       return theme('field', $node, $field, $items, $teaser, $page);
-      break;
-    case 'submit':
-      foreach ($items as $delta => $item) {
-        $items[$delta]['attributes'] = serialize($item['attributes']);
-      }
       break;
   }
 }
@@ -131,8 +131,11 @@ function link_widget_info() {
 function link_widget($op, &$node, $field, &$node_field) {
   switch ($op) {
     case 'form':
+      foreach($node_field as $delta => $value) {
+        _link_widget_prepare($node_field[$delta],$delta);
+      }
+      
       $form = array();
-
       $form[$field['field_name']] = array('#tree' => TRUE);
 
       if ($field['multiple']) {
@@ -143,7 +146,7 @@ function link_widget($op, &$node, $field, &$node_field) {
         $delta = 0;
         // Render link fields for all the entered values
         foreach ($node_field as $data) {
-        if ($data['url']) {
+          if ($data['url']) {
             _link_widget_form($form[$field['field_name']][$delta], $field, $data, $delta);
             $delta++;
           }
@@ -192,7 +195,7 @@ function link_widget($op, &$node, $field, &$node_field) {
  * Helper function renders the link widget in both single and multiple value cases.
  */
 
-function _link_widget_form (&$form_item, $field, $node_field, $delta = 0) {
+function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
   
   $form_item = array(
     '#tree' => true,
@@ -226,13 +229,20 @@ function _link_widget_form (&$form_item, $field, $node_field, $delta = 0) {
   }
 }
 
-function _link_widget_process (&$node_field, $delta = 0) {
+function _link_widget_prepare(&$node_field, $delta = 0) {
+  // Unserialize the attributes array
+  $node_field['attributes'] = unserialize($node_field['attributes']);
+}
+
+function _link_widget_process(&$node_field, $delta = 0) {
   // Remove the target attribute if not selected
   if (!$node_field['attributes']['target'] || $node_field['attributes']['target'] == "default") {
     unset($node_field['attributes']['target']);
   }
   // Trim whitespace from URL
   $node_field['url'] = trim($node_field['url']);
+  // Serialize the attributes array
+  $node_field['attributes'] = serialize($node_field['attributes']);
 }
 
 /**
@@ -241,11 +251,15 @@ function _link_widget_process (&$node_field, $delta = 0) {
 function link_field_formatter_info() {
   return array(
     'default' => array(
-      'label' => 'Default, as link',
+      'label' => t('Default, as link'),
       'field types' => array('link'),
     ),
     'plain' => array(
-      'label' => 'Plain, no link',
+      'label' => t('Plain, no link'),
+      'field types' => array('link'),
+    ),
+    'short' => array(
+      'label' => t('Short, no title as link'),
       'field types' => array('link'),
     ),
   );
@@ -253,9 +267,8 @@ function link_field_formatter_info() {
 
 /**
  * Implementation of hook_field_formatter().
- *
  */
-function link_field_formatter($field, $item, $formatter) {
+function link_field_formatter($field, $item, $formatter, $node) {
   if (empty($item['url'])) {
     return '';
   }
@@ -265,6 +278,7 @@ function link_field_formatter($field, $item, $formatter) {
   }
   
   $attributes = array();
+  $item['attributes'] = unserialize($item['attributes']);
   // Add attributes defined at the widget level
   if (is_array($item['attributes'])) {
     foreach($item['attributes'] as $attribute => $attbvalue) {
@@ -293,8 +307,12 @@ function link_field_formatter($field, $item, $formatter) {
     $url = substr($url, 0, strpos($url, '?'));
   }
   
+  // Give the link the title 'Link'
+  if ($formatter == 'short') {
+    $output = l(t('Link'), link_cleanup_url($item['url']), $attributes, $query, $fragment);
+  }
   // Build the link with a title
-  if (strlen(trim($item['title']))) {
+  elseif (strlen(trim($item['title']))) {
     $output = l($item['title'], $url, $attributes, $query, $fragment);
   }
   // Build the link with the URL as the title (max 80 characters)
@@ -312,7 +330,7 @@ function link_field_formatter($field, $item, $formatter) {
  * @param string $url
  * @param string $protocol The protocol to be prepended to the url if one is not specified
  */
-function link_cleanup_url ($url, $protocol = "http") {
+function link_cleanup_url($url, $protocol = "http") {
   $url = trim($url);
   $type = link_validate_url($url);
   if ($type == 1) {
