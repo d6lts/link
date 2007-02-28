@@ -162,8 +162,9 @@ function link_widget($op, &$node, $field, &$node_field) {
       return $form;
 
     case 'validate':
+      if (!is_object($node)) return;
       foreach($node_field as $delta => $value) {
-        if ($value['url']) {
+        if ($value['url'] && !(isset($field['widget']['default_value'][$delta]['url']) && $value['url'] == $field['widget']['default_value'][$delta]['url'] && !$field['required'])) {
           // Validate the link
           if (link_validate_url(trim($value['url'])) == FALSE) {
             form_set_error($field['field_name'] .']['. $delta. '][url', t('Not a valid URL.'));
@@ -175,14 +176,14 @@ function link_widget($op, &$node, $field, &$node_field) {
         }
         // Require a link if we have a title
         elseif (strlen($value['title']) > 0) {
-          form_set_error($field['field_name'] .']['. $delta. '][link', t('You cannot enter a title without a link.'));
+          form_set_error($field['field_name'] .']['. $delta. '][url', t('You cannot enter a title without a link.'));
         }
       }
       return;
       
     case 'process form values':
       foreach($node_field as $delta => $value) {
-        _link_widget_process($node_field[$delta],$delta);
+        _link_widget_process($node_field[$delta],$delta, $field, $node);
       }
       return;
     
@@ -202,20 +203,29 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
     // Add a microweight to keep fields in first-in first-out order
     '#weight' => $field['widget']['weight'].".00".$delta,
   );
+  
+  $default_url = "";
+  if (isset($field['widget']['default_value'][$delta]['url'])) {
+    $default_url = $field['widget']['default_value'][$delta]['url'];
+  }
   $form_item['url'] = array(
     '#type' => 'textfield',
     '#maxlength' => '255',
     '#title' => $field['title'] == 'none' ? t($field['widget']['label']) : t($field['widget']['label'])." ".t('URL'),
-    '#default_value' => $node_field['url'],
+    '#default_value' => ($node_field['url']) ? $node_field['url'] : $default_url,
     '#required' => ($delta == 0) ? $field['required'] : FALSE,
     '#description' => $field['widget']['description'],
   );
   if ($field['title'] != 'none') {
+    $default_title = "";
+    if (isset($field['widget']['default_value'][$delta]['title'])) {
+      $default_title = $field['widget']['default_value'][$delta]['title'];
+    }
     $form_item['title'] = array(
       '#type' => 'textfield',
       '#maxlength' => '255',
       '#title' => t($field['widget']['label'])." ".t('Title'),
-      '#default_value' => $node_field['title'],
+      '#default_value' => ($node_field['title']) ? $node_field['title'] : $default_title,
       '#required' => ($delta == 0 && $field['title'] == 'required') ? $field['required'] : FALSE,
     );
   }
@@ -234,7 +244,7 @@ function _link_widget_prepare(&$node_field, $delta = 0) {
   $node_field['attributes'] = unserialize($node_field['attributes']);
 }
 
-function _link_widget_process(&$node_field, $delta = 0) {
+function _link_widget_process(&$node_field, $delta = 0, $field, $node) {
   // Remove the target attribute if not selected
   if (!$node_field['attributes']['target'] || $node_field['attributes']['target'] == "default") {
     unset($node_field['attributes']['target']);
@@ -243,6 +253,13 @@ function _link_widget_process(&$node_field, $delta = 0) {
   $node_field['url'] = trim($node_field['url']);
   // Serialize the attributes array
   $node_field['attributes'] = serialize($node_field['attributes']);
+  
+  //don't save an invalid default value (e.g. 'http://')
+  if ((isset($field['widget']['default_value'][$delta]['url']) && $node_field['url'] == $field['widget']['default_value'][$delta]['url']) && is_object($node)) {
+    if (!link_validate_url($node_field['url'])) {
+      unset($node_field['url']);
+    }
+  }
 }
 
 /**
