@@ -394,9 +394,7 @@ function link_validate_url($text) {
   $internal_pattern = "/^([a-z0-9_\-+]+)";
   
   // the rest of the path
-  $end = "(\/[a-z0-9_\-\.~+%=&,$'():;*@]+)*".
-  // forward slash 0 or 1 times
-  '(\/)?'.
+  $end = "(\/[a-z0-9_\-\.~+%=&,$'():;*@]*)*".
   // query string
   "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@]*)?".
   // anchors
