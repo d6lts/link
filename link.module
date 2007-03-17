@@ -159,7 +159,15 @@ function link_widget($op, &$node, $field, &$node_field) {
       }
       
       $form = array();
-      $form[$field['field_name']] = array('#tree' => TRUE);
+      $form[$field['field_name']] = array(
+        '#tree' => TRUE,
+        '#theme' => 'link_widget_form',
+        '#type' => $field['multiple'] ? 'fieldset' : 'markup',
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+        '#title' => $field['widget']['label'],
+        '#description' => $field['widget']['description'],
+      );
 
       if ($field['multiple']) {
         // Generate more fields if necessary on preview
@@ -223,6 +231,7 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
   
   $form_item = array(
     '#tree' => true,
+    '#theme' => 'link_widget_form_row',
     // Add a microweight to keep fields in first-in first-out order
     '#weight' => $field['widget']['weight'].".00".$delta,
   );
@@ -231,13 +240,13 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
   if (isset($field['widget']['default_value'][$delta]['url'])) {
     $default_url = $field['widget']['default_value'][$delta]['url'];
   }
+  
   $form_item['url'] = array(
     '#type' => 'textfield',
     '#maxlength' => '255',
-    '#title' => $field['title'] == 'none' ? t($field['widget']['label']) : t($field['widget']['label'])." ".t('URL'),
+    '#title' => t('URL'),
     '#default_value' => ($node_field['url']) ? $node_field['url'] : $default_url,
     '#required' => ($delta == 0) ? $field['required'] : FALSE,
-    '#description' => $field['widget']['description'],
   );
   if ($field['title'] != 'none') {
     $default_title = "";
@@ -247,7 +256,7 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
     $form_item['title'] = array(
       '#type' => 'textfield',
       '#maxlength' => '255',
-      '#title' => t($field['widget']['label'])." ".t('Title'),
+      '#title' => t('Title'),
       '#default_value' => ($node_field['title']) ? $node_field['title'] : $default_title,
       '#required' => ($delta == 0 && $field['title'] == 'required') ? $field['required'] : FALSE,
     );
@@ -283,6 +292,48 @@ function _link_widget_process(&$node_field, $delta = 0, $field, $node) {
       unset($node_field['url']);
     }
   }
+}
+
+/**
+ * Theme the display of the entire link set
+ */
+function theme_link_widget_form($element) {
+  drupal_set_html_head('<style type="text/css" media="all">@import "/' . drupal_get_path('module', 'link') .'/link.css' . '";</style>');
+  // Check for multiple
+  if (isset($element[1])) {
+    $output = form_render($element);
+  }
+  else {
+    if (isset($element[0]['title'])) {
+      $element[0]['title']['#title'] = $element['#title'] . ' ' . $element[0]['title']['#title'];
+      $element[0]['title']['#description'] = $element['#description'];
+    }
+    else {
+      $element[0]['url']['#description'] = $element['#description'];
+    }
+    $element[0]['url']['#title'] = $element['#title'] . ' ' . $element[0]['url']['#title'];
+    $output = form_render($element[0]);
+  }
+  
+  return $output;
+}
+
+/**
+ * Theme the display of a single form row
+ */
+function theme_link_widget_form_row($element) {  
+  $output = '';
+  $output .= '<div class="link-field-row">';
+  if ($element['title']) {
+    $output .= '<div class="link-field-title link-field-column">' . form_render($element['title']) . '</div>';
+  }
+  $output .= '<div class="link-field-url' . ($element['title'] ? ' link-field-column' : '') . '">' . form_render($element['url']) . '</div>';
+  if ($element['attributes']) {
+    $output .= '<div class="link-attributes">' . form_render($element['attributes']) . '</div>';
+  }
+  $output .= form_render($element);
+  $output .= '</div>';
+  return $output;
 }
 
 /**
