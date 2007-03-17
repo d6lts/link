@@ -392,7 +392,7 @@ function link_validate_url($text) {
   $port = '(:([0-9]{1,4}))';
   
   // Pattern specific to eternal links
-  $external_pattern = '/^' . $protocol . '?'. '(' . $domain . '|' . $ipv4 . '|' . $ipv6 . ')' . $port . '?';
+  $external_pattern = '/^' . $protocol . '?'. '(' . $domain . '|' . $ipv4 . '|' . $ipv6 . '|localhost)' . $port . '?';
   
   // Pattern specific to internal links
   $internal_pattern = "/^([a-z0-9_\-+]+)";
