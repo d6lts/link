@@ -72,7 +72,7 @@ function link_field_settings($op, $field) {
         '#prefix' => '<div class="form-item"><label>Nofollow Value: </label>',
         '#suffix' => '</div>',
         '#title' => t('Add rel=&quot;nofollow&quot; Attribute'),
-        '#description' => t('The <a href="http://en.wikipedia.org/wiki/Nofollow#rel.3Dnofollow">rel=&quot;nofollow&quot; attribute</a> prevents some search engines from spidering entered links.'),
+        '#description' => t('The <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot; attribute</a> prevents some search engines from spidering entered links.'),
         '#default_value' => isset($field['attributes']['rel']) ? $field['attributes']['rel'] : false,
       );
       return $form;
