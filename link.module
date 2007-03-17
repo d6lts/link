@@ -38,7 +38,7 @@ function link_field_settings($op, $field) {
     case 'form':
       $form = array();
       
-      $options = array (
+      $title_options = array (
         'optional' => t('Optional Title'),
         'required' => t('Required Title'),
         'none' => t('No Title'),
@@ -48,23 +48,35 @@ function link_field_settings($op, $field) {
         '#type' => 'radios',
         '#title' => t('Link Title'),
         '#default_value' => isset($field['title']) ? $field['title'] : 'optional',
-        '#options' => $options,
+        '#options' => $title_options,
       );
       
-      $options = array(
+      $form['display'] = array(
+        '#tree' => true,
+      );
+      $form['display']['url_cutoff'] = array(
+        '#type' => 'textfield',
+        '#title' => t('URL Display Cutoff'),
+        '#default_value' => $field['display']['url_cutoff'] ? $field['display']['url_cutoff'] : '80',
+        '#description' => t('If the user does not include a title for this link, the URL will be used as the title. When should the link title be trimmed and finished with an elipsis (&hellip;)? Leave blank for no limit.'),
+        '#maxlength' => 3,
+        '#size' => 3,
+      );
+      
+      $target_options = array(
         'default' => t('Default (no target attribute)'),
         '_top' => t('Open link in window root'),
         '_blank' => t('Open link in new window'),
         'user' => t('Allow the user to choose'),
       );
-      $form['attributes'] = array (
+      $form['attributes'] = array(
         '#tree' => true,
       );
       $form['attributes']['target'] = array(
         '#type' => 'radios',
         '#title' => t('Link Target'),
         '#default_value' => $field['attributes']['target'] ? $field['attributes']['target'] : 'default',
-        '#options' => $options,
+        '#options' => $target_options,
       );
       $form['attributes']['rel'] = array(
         '#type' => 'checkbox',
@@ -75,10 +87,16 @@ function link_field_settings($op, $field) {
         '#description' => t('The <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot; attribute</a> prevents some search engines from spidering entered links.'),
         '#default_value' => isset($field['attributes']['rel']) ? $field['attributes']['rel'] : false,
       );
+      $form['attributes']['class'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Additional CSS Class'),
+        '#description' => t('When output, this link will have have this class attribute. Multiple classes should be seperated by spaces.'),
+        '#default_value' => isset($field['attributes']['class']) ? $field['attributes']['class'] : '',
+      );
       return $form;
 
     case 'save':
-      return array('attributes', 'title');
+      return array('attributes', 'display', 'title');
 
     case 'database columns':
       return array(
@@ -343,8 +361,10 @@ function link_field_formatter($field, $item, $formatter, $node) {
   // Build the link with the URL or email address as the title (max 80 characters)
   else {
     $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, $query, $fragment, TRUE);
-    $display_url = strlen($display_url) > 80 ? substr($display_url, 0, 80) . "..." : $display_url;
-    $output = l($display_url, $url, $attributes, $query, $fragment);
+    if ($field['display']['url_cutoff'] && strlen($display_url) > $field['display']['url_cutoff']) {
+      $display_url = substr($display_url, 0, $field['display']['url_cutoff']) . "...";
+    }
+    $output = l($display_url, $url, $attributes, $query, $fragment, array('class' => $field['attributes']['class']));
   }
   return $output;
 }
@@ -392,7 +412,7 @@ function link_validate_url($text) {
   $port = '(:([0-9]{1,4}))';
   
   // Pattern specific to eternal links
-  $external_pattern = '/^' . $protocol . '?'. '(' . $domain . '|' . $ipv4 . '|' . $ipv6 . '|localhost)' . $port . '?';
+  $external_pattern = '/^' . $protocol . '?'. '(' . $domain . '|' . $ipv4 . '|' . $ipv6 . ' |localhost)' . $port . '?';
   
   // Pattern specific to internal links
   $internal_pattern = "/^([a-z0-9_\-+]+)";
