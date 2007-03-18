@@ -161,8 +161,8 @@ function link_widget($op, &$node, $field, &$node_field) {
 
       if ($field['multiple']) {
         // Generate more fields if necessary on preview
-        if ($_POST['edit'][$field['field_name']]) {
-          $node_field = $_POST['edit'][$field['field_name']];
+        if ($_POST[$field['field_name']]) {
+          $node_field = $_POST[$field['field_name']];
         }
         $delta = 0;
         // Render link fields for all the entered values
@@ -313,7 +313,7 @@ function theme_link_widget_form($element) {
  */
 function theme_link_widget_form_row($element) {  
   $output = '';
-  $output .= '<div class="link-field-row clear-block">';
+  $output .= '<div class="link-field-row">';
   if ($element['title']) {
     $output .= '<div class="link-field-title link-field-column">' . drupal_render($element['title']) . '</div>';
   }
