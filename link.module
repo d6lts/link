@@ -313,7 +313,7 @@ function theme_link_widget_form($element) {
  */
 function theme_link_widget_form_row($element) {  
   $output = '';
-  $output .= '<div class="link-field-row">';
+  $output .= '<div class="link-field-row clear-block">';
   if ($element['title']) {
     $output .= '<div class="link-field-title link-field-column">' . drupal_render($element['title']) . '</div>';
   }
