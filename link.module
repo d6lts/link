@@ -332,7 +332,7 @@ function theme_link_widget_form_row($element) {
     $output .= '<div class="link-attributes">' . form_render($element['attributes']) . '</div>';
   }
   $output .= form_render($element);
-  $output .= '</div>';
+  $output .= '</div><br class="clear" />';
   return $output;
 }
 
