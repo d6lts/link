@@ -553,7 +553,9 @@ function link_cleanup_url($url, $protocol = "http") {
 }
 
 /**
- * A lenient verification for URLs. Accepts all URLs following RFC 1738 standard for URL formation.  
+ * A lenient verification for URLs. Accepts all URLs following RFC 1738 standard
+ * for URL formation and all email addresses following the RFC 2368 standard for
+ * mailto address formation.
  *
  * @param string $text
  * @return mixed Returns boolean FALSE if the URL is not valid. On success, returns an object with
@@ -582,13 +584,16 @@ function link_validate_url($text) {
   // the rest of the path for a standard URL
   $end = $directories . '?' . $query . '?' .  $anchor . '?' . '$/i';
   
+  $user = '[a-zA-Z0-9_\-\.\+\^!#\$%&*+\/\=\?\`\|\{\}~\']+';
+  $email_pattern = '/^mailto:' . $user . '@' . '(' . $domain . '|' . $ipv4 .'|'. $ipv6 . '|localhost)' . $query . '$/';
+  
   if (preg_match($external_pattern . $end, $text)) {
     return LINK_EXTERNAL;
   }
   elseif (preg_match($internal_pattern . $end, $text)) {
     return LINK_INTERNAL;
   }
-  elseif (in_array('mailto', $allowed_protocols) && ($address = preg_replace('/^mailto:/', '', $text)) && valid_email_address($address)) {
+  elseif (in_array('mailto', $allowed_protocols) && preg_match($email_pattern, $text)) {
     return LINK_EMAIL;
   }
   elseif (strpos($text, '<front>') === 0) {
