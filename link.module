@@ -449,15 +449,15 @@ function theme_link_widget_form_row($element) {
 function link_field_formatter_info() {
   return array(
     'default' => array(
-      'label' => t('Default, as link'),
+      'label' => t('Default, as link with title'),
       'field types' => array('link'),
     ),
     'plain' => array(
-      'label' => t('Plain, no link'),
+      'label' => t('Plain, as the text URL'),
       'field types' => array('link'),
     ),
     'short' => array(
-      'label' => t('Short, no title as link'),
+      'label' => t('Short, as link with title "Link"'),
       'field types' => array('link'),
     ),
   );
@@ -510,7 +510,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
   
   // Give the link the title 'Link'
   if ($formatter == 'short') {
-    $output = l(t('Link'), link_cleanup_url($item['url']), $attributes, $query, $fragment);
+    $output = l(t('Link'), $url, $attributes, $query, $fragment);
   }
   // Build the link with a title
   elseif (strlen(trim($item['title']))) {
