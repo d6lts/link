@@ -12,6 +12,22 @@ define('LINK_FRONT', 'front');
 define('LINK_EMAIL', 'email');
 
 /**
+ * Implementation of hook_menu().
+ */
+function link_menu($may_cache) {
+  $items = array();
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'link/widget/js',
+      'callback' => 'link_widget_js',
+      'access' => user_access('access content'),
+      'type' => MENU_CALLBACK,
+    );
+  }
+  return $items;
+}
+
+/**
  * Implementation of hook_field_info().
  */
 function link_field_info() {
@@ -143,9 +159,18 @@ function link_widget_info() {
  */
 function link_widget($op, &$node, $field, &$node_field) {
   switch ($op) {
+    case 'prepare form values':
+      if ($_POST[$field['field_name']]) {
+        $node_field = $_POST[$field['field_name']];
+        unset($node_field['count']);
+        unset($node_field['more-url']);
+        unset($node_field['more']);
+      }
     case 'form':
       foreach($node_field as $delta => $value) {
-        _link_widget_prepare($node_field[$delta],$delta);
+        if (is_numeric($delta)) {
+          _link_widget_prepare($node_field[$delta],$delta);
+        }
       }
       
       $form = array();
@@ -160,14 +185,12 @@ function link_widget($op, &$node, $field, &$node_field) {
       );
 
       if ($field['multiple']) {
-        // Generate more fields if necessary on preview
-        if ($_POST[$field['field_name']]) {
-          $node_field = $_POST[$field['field_name']];
-        }
+        drupal_add_js(drupal_get_path('module', 'link') .'/more.js');
+        
         $delta = 0;
         // Render link fields for all the entered values
         foreach ($node_field as $data) {
-          if ($data['url']) {
+          if (is_array($data) && $data['url']) {
             _link_widget_form($form[$field['field_name']][$delta], $field, $data, $delta);
             $delta++;
           }
@@ -176,6 +199,35 @@ function link_widget($op, &$node, $field, &$node_field) {
         foreach (range($delta, $delta + 1) as $delta) {
           _link_widget_form($form[$field['field_name']][$delta], $field, $node_field, $delta);
         }
+        
+        // Create a wrapper for additional fields
+        $form[$field['field_name']]['wrapper'] = array(
+          '#type' => 'markup',
+          '#value' => '<div id="' . str_replace('_', '-', $field['field_name']) . '-wrapper" class="clear-block"></div>',
+        );
+        
+        // Add 'More' Javascript Callback
+        $form[$field['field_name']]['more-url'] = array(
+          '#type' => 'hidden',
+          '#value' => url('link/widget/js/' . $field['type_name'] . '/' . $field['field_name'], NULL, NULL, TRUE),
+          '#attributes' => array('class' => 'more'),
+          '#id' => str_replace('_', '-', $field['field_name']) . '-more-url',
+        );
+        
+        // Add Current Field Count
+        $form[$field['field_name']]['count'] = array(
+          '#type' => 'hidden',
+          '#value' => $delta,
+          '#id' => str_replace('_', '-', $field['field_name']) . '-count',
+        );
+        
+        // Add More Button
+        $form[$field['field_name']]['more'] = array(
+          '#type' => 'button',
+          '#value' => t('More Links'),
+          '#name' => 'more',
+          '#id' => str_replace('_', '-', $field['field_name']) . '-more',
+        );
       } // end if multiple
       else {
         _link_widget_form($form[$field['field_name']][0], $field, $node_field[0]);
@@ -184,6 +236,9 @@ function link_widget($op, &$node, $field, &$node_field) {
 
     case 'validate':
       if (!is_object($node)) return;
+      unset($node_field['count']);
+      unset($node_field['more-url']);
+      unset($node_field['more']);
       foreach($node_field as $delta => $value) {
         if ($value['url'] && !(isset($field['widget']['default_value'][$delta]['url']) && $value['url'] == $field['widget']['default_value'][$delta]['url'] && !$field['required'])) {
           // Validate the link
@@ -203,12 +258,29 @@ function link_widget($op, &$node, $field, &$node_field) {
       return;
       
     case 'process form values':
+      // Remove the JS helper fields
+      unset($node_field['more-url']);
+      unset($node_field['count']);
+      unset($node_field['more']);
       foreach($node_field as $delta => $value) {
-        _link_widget_process($node_field[$delta],$delta, $field, $node);
+        if (is_numeric($delta)) {
+          _link_widget_process($node_field[$delta],$delta, $field, $node);
+        }
       }
       return;
     
     case 'submit':
+      // Don't save empty fields (beyond the first one)
+      $save_field = array();
+      unset($node_field['more-url']);
+      unset($node_field['count']);
+      unset($node_field['more']);
+      foreach ($node_field as $delta => $value) {
+        if (!empty($value['url']) || $delta == 0) {
+          $save_field[] = $node_field[$delta];
+        }
+      }
+      $node_field = $save_field;
       return;
   }
 }
@@ -220,7 +292,7 @@ function link_widget($op, &$node, $field, &$node_field) {
 function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
   
   $form_item = array(
-    '#tree' => true,
+    '#tree' => TRUE,
     '#theme' => 'link_widget_form_row',
     // Add a microweight to keep fields in first-in first-out order
     '#weight' => $field['widget']['weight'].".00".$delta,
@@ -234,7 +306,7 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
   $form_item['url'] = array(
     '#type' => 'textfield',
     '#maxlength' => '255',
-    '#title' => t('URL'),
+    '#title' => $delta == 0 ? t('URL') : NULL,
     '#default_value' => ($node_field['url']) ? $node_field['url'] : $default_url,
     '#required' => ($delta == 0) ? $field['required'] : FALSE,
   );
@@ -246,7 +318,7 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
     $form_item['title'] = array(
       '#type' => 'textfield',
       '#maxlength' => '255',
-      '#title' => t('Title'),
+      '#title' => $delta == 0 ? t('Title') : NULL,
       '#default_value' => ($node_field['title']) ? $node_field['title'] : $default_title,
       '#required' => ($delta == 0 && $field['title'] == 'required') ? $field['required'] : FALSE,
     );
@@ -284,15 +356,59 @@ function _link_widget_process(&$node_field, $delta = 0, $field, $node) {
   }
 }
 
+function link_widget_js($type_name, $field_name) {
+  $field = content_fields($field_name, $type_name);
+  $type = content_types($type);
+  $delta = $_POST[$field_name]['count'];
+  $form = array();
+  $node_field = array();
+  
+  _link_widget_form($form, $field, $node_field, $delta);
+  
+  // Assign parents matching the original form
+  foreach (element_children($form) as $key) {
+    $form[$key]['#parents'] = array($field_name, $delta, $key);
+  }
+  
+  // Add names, ids, and other form properties
+  foreach (module_implements('form_alter') as $module) {
+    $function = $module .'_form_alter';
+    $function('link_widget_js', $form);
+  }
+  $form = form_builder('link_widget_js', $form);
+  
+  $output = drupal_render($form);
+  
+  print drupal_to_js(array('status' => TRUE, 'data' => $output));
+  exit;
+}
+
+function _link_widget_name($form) {
+  if (!isset($form['#name'])) {
+    $name = array_shift($form['#parents']);
+    $form['#name'] = $name;
+
+    if (count($form['#parents'])) {
+      $form['#name'] .= '['. implode('][', $form['#parents']) .']';
+    }
+    array_unshift($form['#parents'], $name);
+  }
+  if (!isset($form['#id'])) {
+    $form['#id'] = form_clean_id('edit-'. implode('-', $form['#parents']));
+  }
+  return $form;
+}
+
 /**
  * Theme the display of the entire link set
  */
 function theme_link_widget_form($element) {
   drupal_add_css(drupal_get_path('module', 'link') .'/link.css');
-  // Check for multiple
+  // Check for multiple (output normally)
   if (isset($element[1])) {
     $output = drupal_render($element);
   }
+  // Add the field label to the 'Title' and 'URL' labels
   else {
     if (isset($element[0]['title'])) {
       $element[0]['title']['#title'] = $element['#title'] . ' ' . $element[0]['title']['#title'];
@@ -313,11 +429,12 @@ function theme_link_widget_form($element) {
  */
 function theme_link_widget_form_row($element) {  
   $output = '';
-  $output .= '<div class="link-field-row clear-block">';
+  $output .= '<div class="link-field-row clear-block"><div class="link-field-subrow clear-block">';
   if ($element['title']) {
     $output .= '<div class="link-field-title link-field-column">' . drupal_render($element['title']) . '</div>';
   }
   $output .= '<div class="link-field-url' . ($element['title'] ? ' link-field-column' : '') . '">' . drupal_render($element['url']) . '</div>';
+  $output .= '</div>';
   if ($element['attributes']) {
     $output .= '<div class="link-attributes">' . drupal_render($element['attributes']) . '</div>';
   }
