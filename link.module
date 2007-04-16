@@ -460,6 +460,10 @@ function link_field_formatter_info() {
       'label' => t('Short, as link with title "Link"'),
       'field types' => array('link'),
     ),
+    'label' => array(
+      'label' => t('Label, as link with label as title'),
+      'field types' => array('link'),
+    ),
   );
 }
 
@@ -512,10 +516,15 @@ function link_field_formatter($field, $item, $formatter, $node) {
   if ($formatter == 'short') {
     $output = l(t('Link'), $url, $attributes, $query, $fragment);
   }
+  // Build the link using the widget label
+  elseif ($formatter == 'label') {
+    $output = l(t($field['widget']['label']), $url, $attributes, $query, $fragment);
+  }
   // Build the link with a title
   elseif (strlen(trim($item['title']))) {
     $output = l($item['title'], $url, $attributes, $query, $fragment);
   }
+
   // Build the link with the URL or email address as the title (max 80 characters)
   else {
     $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, $query, $fragment, TRUE);
