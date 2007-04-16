@@ -86,13 +86,10 @@ function link_field_settings($op, $field) {
         '#options' => $target_options,
       );
       $form['attributes']['rel'] = array(
-        '#type' => 'checkbox',
-        '#return_value' => 'nofollow',
-        '#prefix' => '<div class="form-item"><label>Nofollow Value: </label>',
-        '#suffix' => '</div>',
-        '#title' => t('Add rel=&quot;nofollow&quot; Attribute'),
-        '#description' => t('The <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot; attribute</a> prevents some search engines from spidering entered links.'),
-        '#default_value' => isset($field['attributes']['rel']) ? $field['attributes']['rel'] : false,
+        '#type' => 'textfield',
+        '#title' => t('Rel Attribute'),
+        '#description' => t('When output, this link will have this rel attribute. The most common usage is the <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot;</a> which prevents some search engines from spidering entered links.'),
+        '#default_value' => isset($field['attributes']['rel']) ? $field['attributes']['rel'] : '',
       );
       $form['attributes']['class'] = array(
         '#type' => 'textfield',
