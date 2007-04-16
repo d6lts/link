@@ -43,11 +43,14 @@ function link_field_info() {
 function link_field_settings($op, $field) {
   switch ($op) {
     case 'form':
-      $form = array();
+      $form = array(
+        '#theme' => 'link_field_settings',
+      );
       
       $title_options = array(
         'optional' => t('Optional Title'),
         'required' => t('Required Title'),
+        'value' => t('Static Title: '),
         'none' => t('No Title'),
       );
       
@@ -56,7 +59,35 @@ function link_field_settings($op, $field) {
         '#title' => t('Link Title'),
         '#default_value' => isset($field['title']) ? $field['title'] : 'optional',
         '#options' => $title_options,
+        '#description' => t('If the link title is optional or required, a field will be displayed to the end user. If the link title is static, the link will always use the same title. If <a href="http://drupal.org/project/token">token module</a> is installed, the static title value may use any other node field as its value.'),
       );
+      
+      $form['title_value'] = array(
+        '#type' => 'textfield',
+        '#default_value' => $field['title_value'],
+        '#size' => '46',
+      );
+      
+      // Add token module replacements if available
+      if (module_exists('token')) {
+        $form['tokens'] = array(
+          '#type' => 'fieldset',
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
+          '#title' => t('Placeholder tokens'),
+          '#description' => t("The following placeholder tokens can be used in both paths and titles. When used in a path or title, they will be replaced with the appropriate values."),
+        );
+        $form['tokens']['help'] = array(
+          '#value' => theme('token_help', 'node'),
+        );
+        
+        $form['enable_tokens'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Allow tokens'),
+          '#default_value' => isset($field['enable_tokens']) ? $field['enable_tokens'] : 1, 
+          '#description' => t('Checking will allow users to enter tokens in URLs and Titles on the node edit form. This does not affect the field settings on this page.'),
+        );
+      }
       
       $form['display'] = array(
         '#tree' => true,
@@ -88,8 +119,8 @@ function link_field_settings($op, $field) {
       $form['attributes']['rel'] = array(
         '#type' => 'textfield',
         '#title' => t('Rel Attribute'),
-        '#description' => t('When output, this link will have this rel attribute. The most common usage is the <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot;</a> which prevents some search engines from spidering entered links.'),
-        '#default_value' => isset($field['attributes']['rel']) ? $field['attributes']['rel'] : '',
+        '#description' => t('When output, this link will have this rel attribute. The most common usage is <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot;</a> which prevents some search engines from spidering entered links.'),
+        '#default_value' => $field['attributes']['rel'] ? $field['attributes']['rel'] : '',
       );
       $form['attributes']['class'] = array(
         '#type' => 'textfield',
@@ -99,8 +130,14 @@ function link_field_settings($op, $field) {
       );
       return $form;
 
+    case 'validate':
+      if ($field['title'] == 'value' && empty($field['title_value'])) {
+        form_set_error('title_value', t('A default title must be provided if the title is a static value'));
+      }
+      break;
+
     case 'save':
-      return array('attributes', 'display', 'title');
+      return array('attributes', 'display', 'title', 'title_value', 'enable_tokens');
 
     case 'database columns':
       return array(
@@ -147,6 +184,20 @@ function link_field_settings($op, $field) {
       );
 
   }
+}
+
+/**
+ * Theme the settings form for the link field.
+ */
+function theme_link_field_settings($form) {
+  $title_value = drupal_render($form['title_value']);
+  $title_checkbox = drupal_render($form['title']['value']);
+  
+  // Set Static Title radio option to include the title_value textfield
+  $form['title']['value'] = array('#value' => '<div class="container-inline">'. $title_checkbox . $title_value .'</div>');
+  
+  // Reprint the title radio options with the included textfield
+  return drupal_render($form);
 }
 
 /**
@@ -234,13 +285,13 @@ function link_widget($op, &$node, $field, &$node_field) {
         );
 
         // Add token module replacements if available
-        if (module_exists('token')) {
+        if (module_exists('token') && $field['enable_tokens']) {
           $form[$field['field_name']]['tokens'] = array(
             '#type' => 'fieldset',
             '#collapsible' => TRUE,
             '#collapsed' => TRUE,
             '#title' => t('Placeholder tokens'),
-            '#description' => t("The following placeholder tokens can be used in both paths and titles. When used in a path or title, they will be replaced with the appropriate values."),
+            '#description' => t("The following placeholder tokens can be used in both titles and URLs. When used in a URL or title, they will be replaced with the appropriate values."),
           );
           $form[$field['field_name']]['tokens']['help'] = array(
             '#value' => theme('token_help', 'node'),
@@ -272,6 +323,20 @@ function link_widget($op, &$node, $field, &$node_field) {
       } // end if multiple
       else {
         _link_widget_form($form[$field['field_name']][0], $field, $node_field[0]);
+        
+        // Add token module replacements if available
+        if (module_exists('token') && $field['enable_tokens']) {
+          $form[$field['field_name']][0]['tokens'] = array(
+            '#type' => 'fieldset',
+            '#collapsible' => TRUE,
+            '#collapsed' => TRUE,
+            '#title' => t('Placeholder tokens'),
+            '#description' => t("The following placeholder tokens can be used in both titles and URLs. When used in a URL or title, they will be replaced with the appropriate values."),
+          );
+          $form[$field['field_name']][0]['tokens']['help'] = array(
+            '#value' => theme('token_help', 'node'),
+          );
+        }
       }
       return $form;
 
@@ -351,7 +416,7 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
     '#default_value' => ($node_field['url']) ? $node_field['url'] : $default_url,
     '#required' => ($delta == 0) ? $field['required'] : FALSE,
   );
-  if ($field['title'] != 'none') {
+  if ($field['title'] == 'optional' || $field['title'] == 'required') {
     $default_title = "";
     if (isset($field['widget']['default_value'][$delta]['title'])) {
       $default_title = $field['widget']['default_value'][$delta]['title'];
@@ -422,22 +487,6 @@ function link_widget_js($type_name, $field_name) {
   
   print drupal_to_js(array('status' => TRUE, 'data' => $output));
   exit;
-}
-
-function _link_widget_name($form) {
-  if (!isset($form['#name'])) {
-    $name = array_shift($form['#parents']);
-    $form['#name'] = $name;
-
-    if (count($form['#parents'])) {
-      $form['#name'] .= '['. implode('][', $form['#parents']) .']';
-    }
-    array_unshift($form['#parents'], $name);
-  }
-  if (!isset($form['#id'])) {
-    $form['#id'] = form_clean_id('edit-'. implode('-', $form['#parents']));
-  }
-  return $form;
 }
 
 /**
@@ -539,8 +588,13 @@ function link_field_formatter($field, $item, $formatter, $node) {
     }
   }
   
+  // Replace URL tokens
+  if (module_exists('token') && $field['enable_tokens']) {
+    $item['url'] = token_replace($item['url'], 'node', $node);
+  }
+  
   $type = link_validate_url($item['url']);
-  $url = link_cleanup_url($item['url'], 'http', $node);
+  $url = link_cleanup_url($item['url']);
   
   // Seperate out the anchor if any
   if (strpos($url, '#') !== FALSE) {
@@ -562,12 +616,20 @@ function link_field_formatter($field, $item, $formatter, $node) {
     $output = l(t($field['widget']['label']), $url, $attributes, $query, $fragment);
   }
   // Build the link with a title
-  elseif (strlen(trim($item['title']))) {
-    // Replace tokens
-    if (module_exists('token')) {
-      $item['title'] = token_replace($item['title'], 'node', $node);
+  elseif (strlen(trim($item['title'])) || ($field['title'] == 'value' && strlen(trim($field['title_value'])))) {
+    // Use the title defined at the field level
+    if ($field['title'] == 'value' && strlen(trim($field['title_value']))) {
+      $title = $field['title_value'];
     }
-    $output = l($item['title'], $url, $attributes, $query, $fragment);
+    // Use the title defined by the user at the widget level
+    else {
+      $title = $item['title'];
+    }
+    // Replace tokens
+    if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
+      $title = token_replace($title, 'node', $node);
+    }
+    $output = l($title, $url, $attributes, $query, $fragment);
   }
 
   // Build the link with the URL or email address as the title (max 80 characters)
@@ -692,15 +754,10 @@ function link_views_protocol_filter_handler($op, $filter, $filterinfo, &$query) 
  * @param string $url
  * @param string $protocol The protocol to be prepended to the url if one is not specified
  */
-function link_cleanup_url($url, $protocol = "http", $node = NULL) {
+function link_cleanup_url($url, $protocol = "http") {
   $url = trim($url);
   $type = link_validate_url($url);
-  
-  // Replace tokens
-  if (module_exists('token')) {
-    $url = token_replace($url, 'node', $node);
-  }
-  
+    
   if ($type == LINK_EXTERNAL) {
     // Check if there is no protocol specified
     $protocol_match = preg_match("/^([a-z0-9][a-z0-9\.\-_]*:\/\/)/i",$url);
