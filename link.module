@@ -787,13 +787,14 @@ function link_validate_url($text) {
   $allowed_protocols = variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'));
   
   $protocol = '((' . implode("|", $allowed_protocols) . '):\/\/)';
+  $authentication = '([a-z0-9]+(:[a-z0-9]+)?@)';
   $domain = '(([a-z0-9]([a-z0-9\-_\[\]]*\.)+)('. LINK_DOMAINS .'|[a-z]{2}))';
   $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})'; 
   $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})'; 
   $port = '(:([0-9]{1,4}))';
   
   // Pattern specific to eternal links
-  $external_pattern = '/^' . $protocol . '?'. '(' . $domain . '|' . $ipv4 . '|' . $ipv6 . ' |localhost)' . $port . '?';
+  $external_pattern = '/^' . $protocol . '?'. $authentication . '?' . '(' . $domain . '|' . $ipv4 . '|' . $ipv6 . ' |localhost)' . $port . '?';
   
   // Pattern specific to internal links
   $internal_pattern = "/^([a-z0-9_\-+\[\]]+)";
