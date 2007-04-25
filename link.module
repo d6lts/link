@@ -489,11 +489,12 @@ function theme_link_widget_form($element) {
     if (isset($element[0]['title'])) {
       $element[0]['title']['#title'] = $element['#title'] . ' ' . $element[0]['title']['#title'];
       $element[0]['title']['#description'] = $element['#description'];
+      $element[0]['url']['#title'] = $element['#title'] . ' ' . $element[0]['url']['#title'];
     }
     else {
+      $element[0]['url']['#title'] = $element['#title'];
       $element[0]['url']['#description'] = $element['#description'];
     }
-    $element[0]['url']['#title'] = $element['#title'] . ' ' . $element[0]['url']['#title'];
     $output = form_render($element[0]);
   }
   
