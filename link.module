@@ -263,7 +263,7 @@ function link_widget($op, &$node, $field, &$node_field) {
       );
 
       if ($field['multiple']) {
-        drupal_add_js(drupal_get_path('module', 'link') .'/more.js');
+        drupal_add_js(drupal_get_path('module', 'link') .'/link.js');
         
         $delta = 0;
         // Render link fields for all the entered values
@@ -302,7 +302,7 @@ function link_widget($op, &$node, $field, &$node_field) {
         $form[$field['field_name']]['more-url'] = array(
           '#type' => 'hidden',
           '#value' => url('link/widget/js/' . $field['type_name'] . '/' . $field['field_name'], NULL, NULL, TRUE),
-          '#attributes' => array('class' => 'more'),
+          '#attributes' => array('class' => 'more-links'),
           '#id' => str_replace('_', '-', $field['field_name']) . '-more-url',
         );
         

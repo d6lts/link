@@ -10,22 +10,22 @@
  *   - field-name should be replaced by a unique identifier for your field
  *   - a callback function which produces an additional field
  */
-Drupal.moreAutoAttach = function() {
-  $('input.more').each(function() {
+Drupal.linkAutoAttach = function() {
+  $('input.more-links').each(function() {
     var uri = this.value;
     // Extract the base name from the id (my-text-field-url -> my-text-field).
     var base = this.id.substring(0, this.id.length - 9);
     var button = base + '-more';
     var wrapper = base + '-wrapper';
     var counter = base + '-count';
-    var more = new Drupal.jsMore(uri, button, wrapper, counter);
+    var link = new Drupal.jslink(uri, button, wrapper, counter);
   });
 }
 
 /**
- * JS jsMore object.
+ * JS jslink object.
  */
-Drupal.jsMore = function(uri, button, wrapper, counter) {
+Drupal.jslink = function(uri, button, wrapper, counter) {
   this.button = '#'+ button;
   this.wrapper = '#'+ wrapper;
   this.counter = '#'+ counter;
@@ -35,7 +35,7 @@ Drupal.jsMore = function(uri, button, wrapper, counter) {
 /**
  * Handler for the form redirection submission.
  */
-Drupal.jsMore.prototype.onsubmit = function() {
+Drupal.jslink.prototype.onsubmit = function() {
   // Increment count
   var count = parseInt($(this.counter).val());
   $(this.counter).val(count + 1);
@@ -44,7 +44,7 @@ Drupal.jsMore.prototype.onsubmit = function() {
 /**
  * Handler for the form redirection completion.
  */
-Drupal.jsMore.prototype.oncomplete = function(data) {
+Drupal.jslink.prototype.oncomplete = function(data) {
   // Avoid unnecessary scrolling
   Drupal.freezeHeight(); 
 
@@ -56,7 +56,7 @@ Drupal.jsMore.prototype.oncomplete = function(data) {
   $(div).hide();
   $(this.wrapper).append(div);
   $(div).slideDown('fast');
-  Drupal.moreAutoAttach();
+  Drupal.linkAutoAttach();
     
   Drupal.unfreezeHeight();
 }
@@ -64,11 +64,11 @@ Drupal.jsMore.prototype.oncomplete = function(data) {
 /**
  * Handler for the form redirection error.
  */
-Drupal.jsMore.prototype.onerror = function(error) {
+Drupal.jslink.prototype.onerror = function(error) {
   alert('An error occurred:\n\n'+ error);
 }
 
 // Global killswitch
 if (Drupal.jsEnabled) {
-  $(document).ready(Drupal.moreAutoAttach);
+  $(document).ready(Drupal.linkAutoAttach);
 }
