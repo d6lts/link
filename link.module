@@ -238,19 +238,16 @@ function link_widget_info() {
 function link_widget($op, &$node, $field, &$node_field) {
   switch ($op) {
     case 'prepare form values':
-      if ($_POST[$field['field_name']]) {
-        $node_field = $_POST[$field['field_name']];
-        unset($node_field['count']);
-        unset($node_field['more-url']);
-        unset($node_field['more']);
-      }
-    case 'form':
       foreach($node_field as $delta => $value) {
         if (is_numeric($delta)) {
-          _link_widget_prepare($node_field[$delta],$delta);
+          _link_widget_prepare($node_field[$delta], $delta);
         }
       }
-      
+      if ($_POST[$field['field_name']]) {
+        $node_field = $_POST[$field['field_name']];
+        unset($node_field['count'], $node_field['more-url'], $node_field['more']);
+      }
+    case 'form':
       $form = array();
       $form[$field['field_name']] = array(
         '#tree' => TRUE,
@@ -275,7 +272,7 @@ function link_widget($op, &$node, $field, &$node_field) {
         }
         // Render two additional new link fields
         foreach (range($delta, $delta + 1) as $delta) {
-          _link_widget_form($form[$field['field_name']][$delta], $field, $node_field, $delta);
+          _link_widget_form($form[$field['field_name']][$delta], $field, array(), $delta);
         }
         
         // Create a wrapper for additional fields
