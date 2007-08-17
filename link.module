@@ -798,7 +798,7 @@ function link_validate_url($text) {
   $internal_pattern = "/^([a-z0-9_\-+\[\]]+)";
   
   $directories = "(\/[a-z0-9_\-\.~+%=&,$'():;*@\[\]]*)*";
-  $query = "(\/?\?[a-z0-9+_\-\.\/%=&,$'():;*@\[\]]*)";
+  $query = "(\/?[?a-z0-9+_\-\.\/%=&,$'():;*@\[\]]*)";
   $anchor = "(#[a-z0-9_\-\.~+%=&,$'():;*@\[\]]*)";
   
   // the rest of the path for a standard URL
