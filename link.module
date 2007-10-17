@@ -397,8 +397,6 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
   $form_item = array(
     '#tree' => TRUE,
     '#theme' => 'link_widget_form_row',
-    // Add a microweight to keep fields in first-in first-out order
-    '#weight' => $field['widget']['weight'].".00".$delta,
   );
   
   $default_url = "";
