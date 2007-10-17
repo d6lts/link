@@ -354,7 +354,7 @@ function link_widget($op, &$node, $field, &$node_field) {
           }
         }
         // Require a link if we have a title
-        elseif (strlen($value['title']) > 0) {
+        elseif (strlen($value['title']) > 0 && strlen(trim($value['url'])) == 0) {
           form_set_error($field['field_name'] .']['. $delta. '][url', t('You cannot enter a title without a link.'));
         }
       }
