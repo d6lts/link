@@ -169,15 +169,15 @@ function link_field_settings($op, $field) {
     case 'arguments':
       return array(
         'content: '. $field['field_name'] .'_url' => array(
-          'name' => t('Link URL') .': '. $field['widget']['label'] .' ('. $field['field_name'] .')',
+          'name' => t('Link URL') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
           'handler' => 'link_views_argument_handler',
         ),
         'content: '. $field['field_name'] .'_title' => array(
-          'name' => t('Link Title') .': '. $field['widget']['label'] .' ('. $field['field_name'] .')',
+          'name' => t('Link Title') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
           'handler' => 'link_views_argument_handler',
         ),
         'content: '. $field['field_name'] .'_target' => array(
-          'name' => t('Link Target') .': '. $field['widget']['label'] .' ('. $field['field_name'] .')',
+          'name' => t('Link Target') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
           'handler' => 'link_views_argument_handler',
         
         ),
@@ -255,7 +255,7 @@ function link_widget($op, &$node, $field, &$node_field) {
         '#type' => $field['multiple'] ? 'fieldset' : 'markup',
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
-        '#title' => $field['widget']['label'],
+        '#title' => t($field['widget']['label']),
         '#description' => $field['widget']['description'],
       );
 
