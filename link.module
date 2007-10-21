@@ -259,6 +259,21 @@ function link_widget($op, &$node, $field, &$node_field) {
         '#description' => $field['widget']['description'],
       );
 
+      // Add token module replacements if available
+      if (module_exists('token') && $field['enable_tokens']) {
+        $tokens_form = array(
+          '#type' => 'fieldset',
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
+          '#title' => t('Placeholder tokens'),
+          '#description' => t("The following placeholder tokens can be used in both titles and URLs. When used in a URL or title, they will be replaced with the appropriate values."),
+          '#weight' => 2,
+        );
+        $tokens_form['help'] = array(
+          '#value' => theme('token_help', 'node'),
+        );
+      }
+
       if ($field['multiple']) {
         drupal_add_js(drupal_get_path('module', 'link') .'/link.js');
         
@@ -281,20 +296,6 @@ function link_widget($op, &$node, $field, &$node_field) {
           '#value' => '<div id="' . str_replace('_', '-', $field['field_name']) . '-wrapper" class="clear-block"></div>',
         );
 
-        // Add token module replacements if available
-        if (module_exists('token') && $field['enable_tokens']) {
-          $form[$field['field_name']]['tokens'] = array(
-            '#type' => 'fieldset',
-            '#collapsible' => TRUE,
-            '#collapsed' => TRUE,
-            '#title' => t('Placeholder tokens'),
-            '#description' => t("The following placeholder tokens can be used in both titles and URLs. When used in a URL or title, they will be replaced with the appropriate values."),
-          );
-          $form[$field['field_name']]['tokens']['help'] = array(
-            '#value' => theme('token_help', 'node'),
-          );
-        }
-
         // Add 'More' Javascript Callback
         $form[$field['field_name']]['more-url'] = array(
           '#type' => 'hidden',
@@ -316,23 +317,16 @@ function link_widget($op, &$node, $field, &$node_field) {
           '#value' => t('More Links'),
           '#name' => 'more',
           '#id' => str_replace('_', '-', $field['field_name']) . '-more',
+          '#weight' => 1,
         );
+        if (isset($tokens_form)) {
+          $form[$field['field_name']]['tokens'] = $tokens_form;
+        }
       } // end if multiple
       else {
         _link_widget_form($form[$field['field_name']][0], $field, $node_field[0]);
-        
-        // Add token module replacements if available
-        if (module_exists('token') && $field['enable_tokens']) {
-          $form[$field['field_name']][0]['tokens'] = array(
-            '#type' => 'fieldset',
-            '#collapsible' => TRUE,
-            '#collapsed' => TRUE,
-            '#title' => t('Placeholder tokens'),
-            '#description' => t("The following placeholder tokens can be used in both titles and URLs. When used in a URL or title, they will be replaced with the appropriate values."),
-          );
-          $form[$field['field_name']][0]['tokens']['help'] = array(
-            '#value' => theme('token_help', 'node'),
-          );
+        if (isset($tokens_form)) {
+          $form[$field['field_name']][0]['tokens'] = $tokens_form;
         }
       }
       return $form;
