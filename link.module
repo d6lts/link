@@ -95,7 +95,7 @@ function link_field_settings($op, $field) {
       $form['display']['url_cutoff'] = array(
         '#type' => 'textfield',
         '#title' => t('URL Display Cutoff'),
-        '#default_value' => $field['display']['url_cutoff'] ? $field['display']['url_cutoff'] : '80',
+        '#default_value' => isset($field['display']['url_cutoff']) ? $field['display']['url_cutoff'] : '80',
         '#description' => t('If the user does not include a title for this link, the URL will be used as the title. When should the link title be trimmed and finished with an elipsis (&hellip;)? Leave blank for no limit.'),
         '#maxlength' => 3,
         '#size' => 3,
