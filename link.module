@@ -47,6 +47,14 @@ function link_field_settings($op, $field) {
         '#theme' => 'link_field_settings',
       );
       
+      $form['url'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Optional URL'),
+        '#default_value' => $field['url'],
+        '#return_value' => 'optional',
+        '#description' => t('If checked, the URL field is optional and submitting a title alone will be acceptable. If the URL is ommitted, the title will be displayed as plain text.'),
+      );
+
       $title_options = array(
         'optional' => t('Optional Title'),
         'required' => t('Required Title'),
@@ -137,7 +145,7 @@ function link_field_settings($op, $field) {
       break;
 
     case 'save':
-      return array('attributes', 'display', 'title', 'title_value', 'enable_tokens');
+      return array('attributes', 'display', 'url', 'title', 'title_value', 'enable_tokens');
 
     case 'database columns':
       return array(
@@ -247,6 +255,7 @@ function link_widget($op, &$node, $field, &$node_field) {
         $node_field = $_POST[$field['field_name']];
         unset($node_field['count'], $node_field['more-url'], $node_field['more']);
       }
+      return;
     case 'form':
       $form = array();
       $form[$field['field_name']] = array(
@@ -280,7 +289,7 @@ function link_widget($op, &$node, $field, &$node_field) {
         $delta = 0;
         // Render link fields for all the entered values
         foreach ($node_field as $data) {
-          if (is_array($data) && $data['url']) {
+          if (is_array($data) && ($data['url'] || $data['title'])) {
             _link_widget_form($form[$field['field_name']][$delta], $field, $data, $delta);
             $delta++;
           }
@@ -336,6 +345,7 @@ function link_widget($op, &$node, $field, &$node_field) {
       unset($node_field['count']);
       unset($node_field['more-url']);
       unset($node_field['more']);
+
       foreach($node_field as $delta => $value) {
         if ($value['url'] && !(isset($field['widget']['default_value'][$delta]['url']) && $value['url'] == $field['widget']['default_value'][$delta]['url'] && !$field['required'])) {
           // Validate the link
@@ -343,14 +353,21 @@ function link_widget($op, &$node, $field, &$node_field) {
             form_set_error($field['field_name'] .']['. $delta. '][url', t('Not a valid URL.'));
           }
           // Require a title for the link if necessary
-          elseif ($field['title'] == 'required' && strlen(trim($value['title'])) == 0) {
+          if ($field['title'] == 'required' && strlen(trim($value['title'])) == 0) {
             form_set_error($field['field_name'] .']['. $delta. '][title', t('Titles are required for all links.'));
           }
         }
         // Require a link if we have a title
-        elseif (strlen($value['title']) > 0 && strlen(trim($value['url'])) == 0) {
-          form_set_error($field['field_name'] .']['. $delta. '][url', t('You cannot enter a title without a link.'));
+        if ($field['url'] !== 'optional' && strlen($value['title']) > 0 && strlen(trim($value['url'])) == 0) {
+          form_set_error($field['field_name'] .']['. $delta. '][url', t('You cannot enter a title without a link url.'));
         }
+        // In a totally bizzaro case, where URLs and titles are optional but the field is required, ensure there is at least one link.
+        if ($field['url'] == 'optional' && $field['title'] == 'optional' && (strlen(trim($value['url'])) != 0 || strlen(trim($value['title'])) != 0)) {
+          $optional_field_found = TRUE;
+        }
+      }
+      if ($field['url'] == 'optional' && $field['title'] == 'optional' && !isset($optional_field_found)) {
+        form_set_error($field['field_name'] .']['. $delta, t('At least one title or URL must be entered.'));
       }
       return;
       
@@ -373,7 +390,7 @@ function link_widget($op, &$node, $field, &$node_field) {
       unset($node_field['count']);
       unset($node_field['more']);
       foreach ($node_field as $delta => $value) {
-        if (!empty($value['url']) || $delta == 0) {
+        if ($value['url'] !== 'optional' || $delta == 0) {
           $save_field[] = $node_field[$delta];
         }
       }
@@ -403,9 +420,9 @@ function _link_widget_form(&$form_item, $field, $node_field, $delta = 0) {
     '#maxlength' => '255',
     '#title' => $delta == 0 ? t('URL') : NULL,
     '#default_value' => ($node_field['url']) ? $node_field['url'] : $default_url,
-    '#required' => ($delta == 0) ? $field['required'] : FALSE,
+    '#required' => ($delta == 0) ? ($field['required'] && empty($field['url'])) : FALSE,
   );
-  if ($field['title'] == 'optional' || $field['title'] == 'required') {
+  if ($field['title'] != 'value' && $field['title'] != 'none') {
     $default_title = "";
     if (isset($field['widget']['default_value'][$delta]['title'])) {
       $default_title = $field['widget']['default_value'][$delta]['title'];
@@ -551,7 +568,7 @@ function link_field_formatter_info() {
  * Implementation of hook_field_formatter().
  */
 function link_field_formatter($field, $item, $formatter, $node) {
-  if (empty($item['url'])) {
+  if (empty($item['url']) && ($field['url'] != 'optional' || empty($item['title']))) {
     return '';
   }
   
@@ -619,7 +636,13 @@ function link_field_formatter($field, $item, $formatter, $node) {
     if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
       $title = token_replace($title, 'node', $node);
     }
-    $output = l($title, $url, $attributes, $query, $fragment);
+
+    if (empty($url) && !empty($title)) {
+      $output = check_plain($title);
+    }
+    else {
+      $output = l($title, $url, $attributes, $query, $fragment);
+    }
   }
 
   // Build the link with the URL or email address as the title (max 80 characters)
