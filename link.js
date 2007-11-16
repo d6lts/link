@@ -20,7 +20,7 @@ Drupal.linkAutoAttach = function() {
     var counter = base + '-count';
     var link = new Drupal.jslink(uri, button, wrapper, counter);
   });
-}
+};
 
 /**
  * JS jslink object.
@@ -29,8 +29,9 @@ Drupal.jslink = function(uri, button, wrapper, counter) {
   this.button = '#'+ button;
   this.wrapper = '#'+ wrapper;
   this.counter = '#'+ counter;
+  console.log(this.button)
   Drupal.redirectFormButton(uri, $(this.button).get(0), this);
-}
+};
 
 /**
  * Handler for the form redirection submission.
@@ -39,7 +40,7 @@ Drupal.jslink.prototype.onsubmit = function() {
   // Increment count
   var count = parseInt($(this.counter).val());
   $(this.counter).val(count + 1);
-}
+};
 
 /**
  * Handler for the form redirection completion.
@@ -59,16 +60,16 @@ Drupal.jslink.prototype.oncomplete = function(data) {
   Drupal.linkAutoAttach();
     
   Drupal.unfreezeHeight();
-}
+};
 
 /**
  * Handler for the form redirection error.
  */
 Drupal.jslink.prototype.onerror = function(error) {
   alert('An error occurred:\n\n'+ error);
-}
+};
 
 // Global killswitch
 if (Drupal.jsEnabled) {
   $(document).ready(Drupal.linkAutoAttach);
-}
+};
