@@ -29,7 +29,6 @@ Drupal.jslink = function(uri, button, wrapper, counter) {
   this.button = '#'+ button;
   this.wrapper = '#'+ wrapper;
   this.counter = '#'+ counter;
-  console.log(this.button)
   Drupal.redirectFormButton(uri, $(this.button).get(0), this);
 };
 
