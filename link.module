@@ -597,6 +597,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
   
   // Replace URL tokens.
   if (module_exists('token') && $field['enable_tokens']) {
+    $node = node_load($node->nid); // Necessary for nodes in views.
     $item['url'] = token_replace($item['url'], 'node', $node);
   }
   
@@ -634,6 +635,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
     }
     // Replace tokens.
     if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
+      $node = node_load($node->nid); // Necessary for nodes in views.
       $title = token_replace($title, 'node', $node);
     }
 
