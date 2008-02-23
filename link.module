@@ -366,8 +366,8 @@ function link_widget($op, &$node, $field, &$node_field) {
           $optional_field_found = TRUE;
         }
       }
-      if ($field['url'] == 'optional' && $field['title'] == 'optional' && !isset($optional_field_found)) {
-        form_set_error($field['field_name'] .']['. $delta, t('At least one title or URL must be entered.'));
+      if ($field['url'] == 'optional' && $field['title'] == 'optional' && $field['required'] && !isset($optional_field_found)) {
+        form_set_error($field['field_name'] .'][0', t('At least one title or URL must be entered.'));
       }
       return;
       
