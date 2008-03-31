@@ -216,7 +216,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
     case 'validate':
       $optional_field_found = FALSE;
       foreach($items as $delta => $value) {
-        _link_widget_validate($items[$delta],$delta, $field, $node, $optional_field_found);
+        _link_validate($items[$delta],$delta, $field, $node, $optional_field_found);
       }
 
       if ($field['url'] == 'optional' && $field['title'] == 'optional' && $field['required'] && !$optional_field_found) {
@@ -226,7 +226,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'process form values':
       foreach($items as $delta => $value) {
-        _link_widget_process($items[$delta],$delta, $field, $node);
+        _link_process($items[$delta],$delta, $field, $node);
       }
       break;
 
