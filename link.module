@@ -579,25 +579,6 @@ function link_field_formatter($field, $item, $formatter, $node) {
     return empty($item['url']) ? check_plain($item['title']) : check_plain(link_cleanup_url($item['url']));
   }
 
-  $attributes = array();
-  $item['attributes'] = unserialize($item['attributes']);
-  // Add attributes defined at the widget level.
-  if (is_array($item['attributes'])) {
-    foreach($item['attributes'] as $attribute => $attbvalue) {
-      if (isset($item['attributes'][$attribute]) && $field['attributes'][$attribute] == 'user') {
-        $attributes[$attribute] = $attbvalue;
-      }
-    }
-  }
-  // Add attributes defined at the field level.
-  if (is_array($field['attributes'])) {
-    foreach($field['attributes'] as $attribute => $attbvalue) {
-      if (!empty($attbvalue) && $attbvalue != 'default' && $attbvalue != 'user') {
-        $attributes[$attribute] = $attbvalue;
-      }
-    }
-  }
-
   // Replace URL tokens.
   if (module_exists('token') && $field['enable_tokens']) {
     $node = node_load($node->nid); // Necessary for nodes in views.
@@ -616,6 +597,32 @@ function link_field_formatter($field, $item, $formatter, $node) {
   if (strpos($url, '?') !== FALSE) {
     $query = substr($url, strpos($url, '?') + 1);
     $url = substr($url, 0, strpos($url, '?'));
+  }
+
+  $attributes = array();
+  $item['attributes'] = unserialize($item['attributes']);
+  // Add attributes defined at the widget level.
+  if (is_array($item['attributes'])) {
+    foreach($item['attributes'] as $attribute => $attbvalue) {
+      if (isset($item['attributes'][$attribute]) && $field['attributes'][$attribute] == 'user') {
+        $attributes[$attribute] = $attbvalue;
+      }
+    }
+  }
+  // Add attributes defined at the field level.
+  if (is_array($field['attributes'])) {
+    foreach($field['attributes'] as $attribute => $attbvalue) {
+      if (!empty($attbvalue) && $attbvalue != 'default' && $attbvalue != 'user') {
+        $attributes[$attribute] = $attbvalue;
+      }
+    }
+  }
+  // Remove the rel=nofollow for internal links.
+  if ($type != LINK_EXTERNAL && strpos($attributes['rel'], 'nofollow') !== FALSE) {
+    $attributes['rel'] = str_replace('nofollow', '', $attributes['rel']);
+    if (empty($attributes['rel'])) {
+      unset($attributes['rel']);
+    }
   }
 
   // Give the link the title 'Link'.
