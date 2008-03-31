@@ -381,6 +381,13 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
       }
     }
   }
+  // Remove the rel=nofollow for internal links.
+  if ($type != LINK_EXTERNAL && strpos($attributes['rel'], 'nofollow') !== FALSE) {
+    $attributes['rel'] = str_replace('nofollow', '', $attributes['rel']);
+    if (empty($attributes['rel'])) {
+      unset($attributes['rel']);
+    }
+  }
   $item['attributes'] = $attributes;
 
   // Add the widget label.
