@@ -232,7 +232,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'sanitize':
       foreach ($items as $delta => $value) {
-        link_item_sanitize($items[$delta], $delta, $field, $node);
+        _link_sanitize($items[$delta], $delta, $field, $node);
       }
       break;
   }
