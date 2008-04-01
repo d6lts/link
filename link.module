@@ -17,7 +17,10 @@ define('LINK_DOMAINS', 'aero|arpa|biz|com|cat|coop|edu|gov|info|int|jobs|mil|mus
  */
 function link_field_info() {
   return array(
-    'link' => array('label' => 'Link'),
+    'link' => array(
+      'label' => 'Link',
+      'description' => t('Store a title, href, and attributes in the database to assemble a link.'),
+    ),
   );
 }
 
