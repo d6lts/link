@@ -195,7 +195,7 @@ function theme_link_field_settings($form) {
 }
 
 /**
- * Implementation of hook_field_is_empty().
+ * Implementation of hook_content_is_empty().
  */
 function link_content_is_empty($item, $field) {
   if (empty($item['title']) && empty($item['url'])) {
@@ -264,7 +264,6 @@ function link_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   );
   return $element;
 }
-
 
 function _link_load(&$item, $delta = 0) {
   // Unserialize the attributes array.
@@ -425,21 +424,9 @@ function link_theme() {
 
 /**
  * FAPI theme for an individual text elements.
- *
- * The textfield or textarea is already rendered by the
- * textfield or textarea themes and the html output
- * lives in $element['#children']. Override this theme to
- * make custom changes to the output.
- *
- * $element['#field_name'] contains the field name
- * $element['#delta']  is the position of this element in the group
  */
 function theme_link($element) {
   drupal_add_css(drupal_get_path('module', 'link') .'/link.css');
-
-  if ($element['#delta'] == 0) {
-
-  }
 
   $output = '';
   $output .= '<div class="link-field-subrow clear-block">';
@@ -454,27 +441,15 @@ function theme_link($element) {
   return $output;
 }
 
-/*
- * Implementation of FAPI hook_elements().
- *
- * Any FAPI callbacks needed for individual widgets can be declared here,
- * and the element will be passed to those callbacks for processing.
- *
- * Drupal will automatically theme the element using a theme with
- * the same name as the hook_elements key.
- *
- * Autocomplete_path is not used by text_widget but other widgets can use it
- * (see nodereference and userreference).
+/**
+ * Implementation of hook_elements().
  */
 function link_elements() {
   $elements = array();
   $elements['link'] =  array(
     '#input' => TRUE,
     '#columns' => array('url', 'title'),
-    '#delta' => 0,
     '#process' => array('link_process'),
-    '#autocomplete_path' => FALSE,
-    '#theme' => 'link_widget_form_row',
   );
   return $elements;
 }
