@@ -475,7 +475,7 @@ function link_process($element, $edit, $form_state, $form) {
      '#maxlength' => '255',
      '#title' => t('URL'),
      '#description' => $element['#description'],
-     '#required' => ($delta == 0 && $field['title'] != 'optional') ? $element['#required'] : FALSE,
+     '#required' => ($delta == 0 && $field['url'] !== 'optional') ? $element['#required'] : FALSE,
      '#default_value' => isset($element['#value']['url']) ? $element['#value']['url'] : NULL,
    );
    if ($field['title'] != 'none') {
