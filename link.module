@@ -322,10 +322,15 @@ function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {
  *   The node containing this link.
  */
 function _link_sanitize(&$item, $delta, &$field, &$node) {
+  // Don't try to process empty links.
+  if (empty($item['url']) && empty($item['title'])) {
+    return;
+  }
+
   // Replace URL tokens.
   if (module_exists('token') && $field['enable_tokens']) {
-    $node = node_load($node->nid); // Necessary for nodes in views.
-    $item['url'] = token_replace($item['url'], 'node', $node);
+    $token_node = node_load($node->nid); // Necessary for nodes in views.
+    $item['url'] = token_replace($item['url'], 'node', $token_node);
   }
 
   $type = link_validate_url($item['url']);
@@ -345,7 +350,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   $item['url'] = $url;
 
   // Create a shortened URL for display.
-  $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, array('query' => $item['query'], 'fragment' => $item['fragment'], 'absolute' => TRUE));
+  $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, array('query' => isset($item['query']) ? $item['query'] : NULL, 'fragment' => isset($item['fragment']) ? $item['fragment'] : NULL, 'absolute' => TRUE));
   if ($field['display']['url_cutoff'] && strlen($display_url) > $field['display']['url_cutoff']) {
     $display_url = substr($display_url, 0, $field['display']['url_cutoff']) . "...";
   }
@@ -361,8 +366,8 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   }
   // Replace tokens.
   if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
-    $node = node_load($node->nid); // Necessary for nodes in views.
-    $title = token_replace($title, 'node', $node);
+    $token_node = node_load($node->nid); // Necessary for nodes in views.
+    $title = token_replace($title, 'node', $token_node);
   }
   $item['display_title'] = empty($title) ? $item['display_url'] : $title;
 
@@ -384,7 +389,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     }
   }
   // Remove the rel=nofollow for internal links.
-  if ($type != LINK_EXTERNAL && strpos($attributes['rel'], 'nofollow') !== FALSE) {
+  if ($type != LINK_EXTERNAL && isset($attributes['rel']) && strpos($attributes['rel'], 'nofollow') !== FALSE) {
     $attributes['rel'] = str_replace('nofollow', '', $attributes['rel']);
     if (empty($attributes['rel'])) {
       unset($attributes['rel']);
@@ -435,7 +440,7 @@ function theme_link($element) {
   }
   $output .= '<div class="link-field-url' . ($element['title'] ? ' link-field-column' : '') . '">' . theme('textfield', $element['url']) . '</div>';
   $output .= '</div>';
-  if ($element['attributes']) {
+  if (!empty($element['attributes'])) {
     $output .= '<div class="link-attributes">' . theme('form_element', $element['attributes'], $element['attributes']['#value']) . '</div>';
   }
   return $output;
@@ -530,7 +535,7 @@ function theme_link_formatter_default($element) {
     return l($element['#item']['display_title'], $element['#item']['url'], $element['#item']);
   }
   // If only a title, display the title.
-  else {
+  elseif (!empty($element['#item']['display_title'])) {
     return check_plain($element['#item']['display_title']);
   }
 }
