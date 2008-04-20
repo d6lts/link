@@ -439,17 +439,22 @@ function theme_link($element) {
   drupal_add_css(drupal_get_path('module', 'link') .'/link.css');
 
   // Prefix single value link fields with the name of the field.
-  if (!$element['#field']['multiple'] && isset($element['url']) && isset($element['title'])) {
-    $element['url']['#title'] = $element['#title'] .' '. $element['url']['#title'];
-    $element['title']['#title'] = $element['#title'] .' '. $element['title']['#title'];
+  if (empty($element['#field']['multiple'])) {
+    if (isset($element['url']) && isset($element['title'])) {
+      $element['url']['#title'] = $element['#title'] .' '. $element['url']['#title'];
+      $element['title']['#title'] = $element['#title'] .' '. $element['title']['#title'];
+    }
+    elseif($element['url']) {
+      $element['url']['#title'] = $element['#title'];
+    }
   }
 
   $output = '';
   $output .= '<div class="link-field-subrow clear-block">';
-  if ($element['title']) {
+  if (isset($element['title'])) {
     $output .= '<div class="link-field-title link-field-column">' . theme('textfield', $element['title']) . '</div>';
   }
-  $output .= '<div class="link-field-url' . ($element['title'] ? ' link-field-column' : '') . '">' . theme('textfield', $element['url']) . '</div>';
+  $output .= '<div class="link-field-url' . (isset($element['title']) ? ' link-field-column' : '') . '">' . theme('textfield', $element['url']) . '</div>';
   $output .= '</div>';
   if (!empty($element['attributes'])) {
     $output .= '<div class="link-attributes">' . theme('form_element', $element['attributes'], $element['attributes']['#value']) . '</div>';
