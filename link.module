@@ -618,7 +618,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
     }
   }
   // Remove the rel=nofollow for internal links.
-  if ($type != LINK_EXTERNAL && strpos($attributes['rel'], 'nofollow') !== FALSE) {
+  if ($type != LINK_EXTERNAL && isset($attributes['rel']) && strpos($attributes['rel'], 'nofollow') !== FALSE) {
     $attributes['rel'] = str_replace('nofollow', '', $attributes['rel']);
     if (empty($attributes['rel'])) {
       unset($attributes['rel']);
