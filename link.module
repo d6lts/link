@@ -261,6 +261,11 @@ function link_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   $element = array(
     '#type' => $field['widget']['type'],
     '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+    '#title' => $field['widget']['label'],
+    '#weight' => $field['widget']['weight'],
+    '#description' => $field['widget']['description'],
+    '#required' => $field['required'],
+    '#field' => $field,
   );
   return $element;
 }
@@ -432,6 +437,12 @@ function link_theme() {
  */
 function theme_link($element) {
   drupal_add_css(drupal_get_path('module', 'link') .'/link.css');
+
+  // Prefix single value link fields with the name of the field.
+  if (!$element['#field']['multiple'] && isset($element['url']) && isset($element['title'])) {
+    $element['url']['#title'] = $element['#title'] .' '. $element['url']['#title'];
+    $element['title']['#title'] = $element['#title'] .' '. $element['title']['#title'];
+  }
 
   $output = '';
   $output .= '<div class="link-field-subrow clear-block">';
