@@ -116,6 +116,9 @@ function link_field_settings($op, $field) {
         '#title' => t('Rel Attribute'),
         '#description' => t('When output, this link will have this rel attribute. The most common usage is <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot;</a> which prevents some search engines from spidering entered links.'),
         '#default_value' => $field['attributes']['rel'] ? $field['attributes']['rel'] : '',
+        '#field_prefix' => 'rel = "',
+        '#field_suffix' => '"',
+        '#size' => 20,
       );
       $form['attributes']['class'] = array(
         '#type' => 'textfield',
