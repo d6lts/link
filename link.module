@@ -680,6 +680,30 @@ function link_views_protocol_filter_handler($op, $filter, $filterinfo, &$query) 
   $query->add_where(implode(' '. $filter['operator'] .' ', $where_conditions));
 }
 
+function link_token_list($type = 'all') {
+  if ($type == 'field' || $type == 'all') {
+    $tokens = array();
+
+    $tokens['link']['url'] = t("Link URL");
+    $tokens['link']['title'] = t("Link title");
+    $tokens['link']['view'] = t("Formatted html link");
+
+    return $tokens;
+  }
+}
+
+function link_token_values($type, $object = NULL) {
+  if ($type == 'field') {
+    $item = $object[0];
+
+    $tokens['url'] = $item['url'];
+    $tokens['title'] = $item['title'];
+    $tokens['view'] = $item['view'];
+
+    return $tokens;
+  }
+}
+
 /**
  * Forms a valid URL if possible from an entered address.
  * Trims whitespace and automatically adds an http:// to addresses without a protocol specified
