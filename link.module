@@ -139,47 +139,16 @@ function link_field_settings($op, $field) {
 
     case 'database columns':
       return array(
-        'url' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE),
-        'title' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE),
+        'url' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE),
+        'title' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE),
         'attributes' => array('type' => 'text', 'size' => 'medium', 'not null' => FALSE),
       );
 
-    case 'filters':
-      return array(
-        'default' => array(
-          'name' => t('URL'),
-          'operator' => 'views_handler_operator_like',
-          'handler' => 'views_handler_operator_like',
-        ),
-        'title' => array(
-          'name' => t('Title'),
-          'operator' => 'views_handler_operator_like',
-          'handler' => 'views_handler_operator_like',
-        ),
-        'protocol' => array(
-          'name' => t('Protocol'),
-          'list' => drupal_map_assoc(variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'))),
-          'operator' => 'views_handler_operator_or',
-          'handler' => 'link_views_protocol_filter_handler',
-        ),
-      );
-
-    case 'arguments':
-      return array(
-        'content: '. $field['field_name'] .'_url' => array(
-          'name' => t('Link URL') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
-          'handler' => 'link_views_argument_handler',
-        ),
-        'content: '. $field['field_name'] .'_title' => array(
-          'name' => t('Link Title') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
-          'handler' => 'link_views_argument_handler',
-        ),
-        'content: '. $field['field_name'] .'_target' => array(
-          'name' => t('Link Target') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
-          'handler' => 'link_views_argument_handler',
-        ),
-      );
-
+    case 'views data':
+      if (!empty($field)) {
+        $data = link_views_data($field);
+      }
+      return isset($data) ? $data : NULL;
   }
 }
 
@@ -497,7 +466,7 @@ function link_process($element, $edit, $form_state, $form) {
      '#required' => ($delta == 0 && $field['url'] !== 'optional') ? $element['#required'] : FALSE,
      '#default_value' => isset($element['#value']['url']) ? $element['#value']['url'] : NULL,
    );
-   if ($field['title'] != 'none') {
+   if ($field['title'] != 'none' && $field['title'] != 'value') {
      $element['title'] = array(
        '#type' => 'textfield',
        '#maxlength' => '255',
@@ -505,7 +474,6 @@ function link_process($element, $edit, $form_state, $form) {
        '#required' => ($delta == 0 && $field['title'] == 'required') ? $field['required'] : FALSE,
        '#default_value' => isset($element['#value']['title']) ? $element['#value']['title'] : NULL,
      );
-
    }
    if ($field['attributes']['target'] == 'user') {
      $element['attributes']['target'] = array(
@@ -578,109 +546,6 @@ function theme_link_formatter_short($element) {
  */
 function theme_link_formatter_label($element) {
   return $element['#item']['url'] ? l($element['#item']['label'], $element['#item']['url'], $element['#item']) : '';
-}
-/**
- * Views module argument handler for link fields
- */
-function link_views_argument_handler($op, &$query, $argtype, $arg = '') {
-  if ($op == 'filter') {
-    $field_name = substr($argtype['type'], 9, strrpos($argtype['type'], '_') - 9);
-    $column = substr($argtype['type'], strrpos($argtype['type'], '_') + 1);
-  }
-  else {
-    $field_name = substr($argtype, 9, strrpos($argtype, '_') - 9);
-    $column = substr($argtype, strrpos($argtype, '_') + 1);
-  }
-
-  // Right now the only attribute we support in views in 'target', but
-  // other attributes of the href tag could be added later.
-  if ($column == 'target') {
-    $attribute = $column;
-    $column = 'attributes';
-  }
-
-  $field = content_fields($field_name);
-  $db_info = content_database_info($field);
-  $main_column = $db_info['columns'][$column];
-
-  // The table name used here is the Views alias for the table, not the actual
-  // table name.
-  $table = 'node_data_'. $field['field_name'];
-
-  switch ($op) {
-    case 'summary':
-      $query->ensure_table($table);
-      $query->add_field($main_column['column'], $table);
-      return array('field' => $table .'.'. $main_column['column']);
-      break;
-
-    case 'filter':
-      $query->ensure_table($table);
-      if ($column == 'attributes') {
-        // Because attributes are stored serialized, our only option is to also
-        // serialize the data we're searching for and use LIKE to find similar data.
-        $query->add_where($table .'.'. $main_column['column'] ." LIKE '%%%s%'", serialize($attribute) . serialize($arg));
-      }
-      else {
-        $query->add_where($table .'.'. $main_column['column'] ." = '%s'", $arg);
-      }
-      break;
-
-    case 'link':
-      $item = array();
-      foreach ($db_info['columns'] as $column => $attributes) {
-        $view_column_name = $attributes['column'];
-        $item[$column] = $query->$view_column_name;
-      }
-
-      return l(content_format($field, $item, 'plain'), $arg .'/'. $query->$main_column['column'], array(), NULL, NULL, FALSE, TRUE);
-
-    case 'sort':
-      break;
-
-    case 'title':
-      $item = array(key($db_info['columns']) => $query);
-      return content_format($field, $item);
-      break;
-  }
-}
-
-/**
- * Views modules filter handler for link protocol filtering
- */
-function link_views_protocol_filter_handler($op, $filter, $filterinfo, &$query) {
-  global $db_type;
-
-  $protocols = $filter['value'];
-  $field = $filterinfo['field'];
-  // $table is not the real table name but the views alias.
-  $table = 'node_data_'. $filterinfo['content_field']['field_name'];
-
-  foreach ($protocols as $protocol) {
-    // Simple case, the URL begins with the specified protocol.
-    $condition = $table .'.'. $field .' LIKE \''. $protocol .'%\'';
-
-    // More complex case, no protocol specified but is automatically cleaned up
-    // by link_cleanup_url(). RegEx is required for this search operation.
-    if ($protocol == 'http') {
-      if ($db_type == 'pgsql') {
-        // PostGreSQL code has NOT been tested. Please report any problems to the link issue queue.
-        // pgSQL requires all slashes to be double escaped in regular expressions.
-        // See http://www.postgresql.org/docs/8.1/static/functions-matching.html#FUNCTIONS-POSIX-REGEXP
-        $condition .= ' OR '. $table .'.'. $field .' ~* \''. '^(([a-z0-9]([a-z0-9\\-_]*\\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\''; 
-      }
-      else {
-        // mySQL requires backslashes to be double (triple?) escaped within character classes.
-        // See http://dev.mysql.com/doc/refman/5.0/en/string-comparison-functions.html#operator_regexp
-        $condition .= ' OR '. $table .'.'. $field .' REGEXP \''. '^(([a-z0-9]([a-z0-9\\\-_]*\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\''; 
-      }
-    }
-
-    $where_conditions[] = $condition;
-  }
-
-  $query->ensure_table($table);
-  $query->add_where(implode(' '. $filter['operator'] .' ', $where_conditions));
 }
 
 function link_token_list($type = 'all') {
