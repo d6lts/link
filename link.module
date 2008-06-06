@@ -67,7 +67,7 @@ function link_field_settings($op, $field) {
         '#title' => t('Link Title'),
         '#default_value' => isset($field['title']) ? $field['title'] : 'optional',
         '#options' => $title_options,
-        '#description' => t('If the link title is optional or required, a field will be displayed to the end user. If the link title is static, the link will always use the same title. If <a href="http://drupal.org/project/token">token module</a> is installed, the static title value may use any other node field as its value.'),
+        '#description' => t('If the link title is optional or required, a field will be displayed to the end user. If the link title is static, the link will always use the same title. If <a href="http://drupal.org/project/token">token module</a> is installed, the static title value may use any other node field as its value. Static and token-based titles may include most inline XHTML tags such as <em>strong</em>, <em>em</em>, <em>img</em>, <em>span</em>, etc.'),
       );
 
       $form['title_value'] = array(
@@ -91,7 +91,7 @@ function link_field_settings($op, $field) {
 
         $form['enable_tokens'] = array(
           '#type' => 'checkbox',
-          '#title' => t('Allow tokens'),
+          '#title' => t('Allow user-entered tokens'),
           '#default_value' => isset($field['enable_tokens']) ? $field['enable_tokens'] : 1, 
           '#description' => t('Checking will allow users to enter tokens in URLs and Titles on the node edit form. This does not affect the field settings on this page.'),
         );
@@ -657,7 +657,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
     $output = '';
     $output .= '<div class="link-item">';
     $output .= '<div class="link-title">'. $title .'</div>';
-    $output .= '<div class="link-url">'. l($display_url, $url, $attributes, $query, $fragment) .'</div>';
+    $output .= '<div class="link-url">'. l($display_url, $url, $attributes, $query, $fragment, FALSE, $item['html']) .'</div>';
     $output .= '</div>';
   }
   // Build the link with a title.
@@ -667,7 +667,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
       $output = check_plain($title);
     }
     else {
-      $output = l($title, $url, $attributes, $query, $fragment);
+      $output = l($title, $url, $attributes, $query, $fragment, FALSE, $item['html']);
     }
   }
   // Build the link with the URL or email address as the title (max 80 characters).
@@ -680,7 +680,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
 /**
  * Helper function for link_field_formatter().
  */
-function _link_field_formatter_title($field, $item, $node) {
+function _link_field_formatter_title(&$field, &$item, &$node) {
   // Use the title defined at the field level.
   if ($field['title'] == 'value' && trim($field['title_value'])) {
     $title = $field['title_value'];
@@ -690,9 +690,11 @@ function _link_field_formatter_title($field, $item, $node) {
     $title = $item['title'];
   }
   // Replace tokens.
+  $item['html'] = FALSE;
   if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
     $node = node_load($node->nid); // Necessary for nodes in views.
-    $title = token_replace($title, 'node', $node);
+    $title = filter_xss(token_replace($title, 'node', $node), array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
+    $item['html'] = TRUE;
   }
   return $title;
 }
