@@ -92,7 +92,7 @@ function link_field_settings($op, $field) {
         $form['enable_tokens'] = array(
           '#type' => 'checkbox',
           '#title' => t('Allow user-entered tokens'),
-          '#default_value' => isset($field['enable_tokens']) ? $field['enable_tokens'] : 1, 
+          '#default_value' => isset($field['enable_tokens']) ? $field['enable_tokens'] : 1,
           '#description' => t('Checking will allow users to enter tokens in URLs and Titles on the node edit form. This does not affect the field settings on this page.'),
         );
       }
@@ -121,14 +121,14 @@ function link_field_settings($op, $field) {
       $form['attributes']['target'] = array(
         '#type' => 'radios',
         '#title' => t('Link Target'),
-        '#default_value' => $field['attributes']['target'] ? $field['attributes']['target'] : 'default',
+        '#default_value' => empty($field['attributes']['target']) ? 'default' : $field['attributes']['target'],
         '#options' => $target_options,
       );
       $form['attributes']['rel'] = array(
         '#type' => 'textfield',
         '#title' => t('Rel Attribute'),
         '#description' => t('When output, this link will have this rel attribute. The most common usage is <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot;</a> which prevents some search engines from spidering entered links.'),
-        '#default_value' => $field['attributes']['rel'] ? $field['attributes']['rel'] : '',
+        '#default_value' => empty($field['attributes']['rel']) ? '' : $field['attributes']['rel'],
         '#field_prefix' => 'rel = "',
         '#field_suffix' => '"',
         '#size' => 20,
@@ -137,7 +137,7 @@ function link_field_settings($op, $field) {
         '#type' => 'textfield',
         '#title' => t('Additional CSS Class'),
         '#description' => t('When output, this link will have have this class attribute. Multiple classes should be seperated by spaces.'),
-        '#default_value' => isset($field['attributes']['class']) ? $field['attributes']['class'] : '',
+        '#default_value' => empty($field['attributes']['class']) ? '' : $field['attributes']['class'],
       );
       return $form;
 
@@ -416,7 +416,7 @@ function _link_widget_form(&$form_item, $field, $item, $delta = 0) {
       '#required' => ($delta == 0 && $field['title'] == 'required') ? $field['required'] : FALSE,
     );
   }
-  if ($field['attributes']['target'] == 'user') {
+  if (!empty($field['attributes']['target']) && $field['attributes']['target'] == 'user') {
     $form_item['attributes']['target'] = array(
       '#type' => 'checkbox',
       '#title' => t('Open URL in a New Window'),
@@ -526,7 +526,7 @@ function theme_link_widget_form($element) {
 /**
  * Theme the display of a single form row
  */
-function theme_link_widget_form_row($element) {  
+function theme_link_widget_form_row($element) {
   $output = '';
   $output .= '<div class="link-field-row clear-block"><div class="link-field-subrow clear-block">';
   if ($element['title']) {
@@ -616,7 +616,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
   $attributes = array();
   $item['attributes'] = unserialize($item['attributes']);
   // Add attributes defined at the widget level.
-  if (is_array($item['attributes'])) {
+  if (!empty($item['attributes']) && is_array($item['attributes'])) {
     foreach($item['attributes'] as $attribute => $attbvalue) {
       if (isset($item['attributes'][$attribute]) && $field['attributes'][$attribute] == 'user') {
         $attributes[$attribute] = $attbvalue;
@@ -787,12 +787,12 @@ function link_views_protocol_filter_handler($op, $filter, $filterinfo, &$query) 
         // PostGreSQL code has NOT been tested. Please report any problems to the link issue queue.
         // pgSQL requires all slashes to be double escaped in regular expressions.
         // See http://www.postgresql.org/docs/8.1/static/functions-matching.html#FUNCTIONS-POSIX-REGEXP
-        $condition .= ' OR '. $table .'.'. $field .' ~* \''. '^(([a-z0-9]([a-z0-9\\-_]*\\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\''; 
+        $condition .= ' OR '. $table .'.'. $field .' ~* \''. '^(([a-z0-9]([a-z0-9\\-_]*\\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\'';
       }
       else {
         // mySQL requires backslashes to be double (triple?) escaped within character classes.
         // See http://dev.mysql.com/doc/refman/5.0/en/string-comparison-functions.html#operator_regexp
-        $condition .= ' OR '. $table .'.'. $field .' REGEXP \''. '^(([a-z0-9]([a-z0-9\\\-_]*\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\''; 
+        $condition .= ' OR '. $table .'.'. $field .' REGEXP \''. '^(([a-z0-9]([a-z0-9\\\-_]*\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\'';
       }
     }
 
@@ -845,8 +845,8 @@ function link_validate_url($text) {
   $protocol = '((' . implode("|", $allowed_protocols) . '):\/\/)';
   $authentication = '([a-z0-9]+(:[a-z0-9]+)?@)';
   $domain = '((([a-z0-9]([a-z0-9\-_\[\]]*\.))+)('. LINK_DOMAINS .'|[a-z]{2}))';
-  $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})'; 
-  $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})'; 
+  $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})';
+  $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})';
   $port = '(:([0-9]{1,5}))';
 
   // Pattern specific to eternal links.
