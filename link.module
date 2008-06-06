@@ -573,8 +573,11 @@ function theme_link_formatter_label($element) {
  * Theme function for 'separate' text field formatter.
  */
 function theme_link_formatter_separate($element) {
+  $class = empty($element['#item']['attributes']['class']) ? '' : ' '. $element['#item']['attributes']['class'];
+  unset($element['#item']['attributes']['class']);
+
   $output = '';
-  $output .= '<div class="link-item">';
+  $output .= '<div class="link-item '. $class .'">';
   $output .= '<div class="link-title">'. $element['#item']['display_title'] .'</div>';
   $output .= '<div class="link-url">'. l($element['#item']['display_url'], $element['#item']['url'], $element['#item']) .'</div>';
   $output .= '</div>';
