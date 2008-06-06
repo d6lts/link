@@ -654,8 +654,11 @@ function link_field_formatter($field, $item, $formatter, $node) {
   // Build the link using the widget label as separate title.
   elseif ($formatter == 'separate') {
     $title = _link_field_formatter_title($field, $item, $node);
+    $class = empty($field['attributes']['class']) ? '' : ' '. $field['attributes']['class'];
+    unset($field['attributes']['class']);
+
     $output = '';
-    $output .= '<div class="link-item">';
+    $output .= '<div class="link-item'. $class .'">';
     $output .= '<div class="link-title">'. $title .'</div>';
     $output .= '<div class="link-url">'. l($display_url, $url, $attributes, $query, $fragment, FALSE, $item['html']) .'</div>';
     $output .= '</div>';
