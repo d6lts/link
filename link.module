@@ -392,6 +392,9 @@ function link_theme() {
     'link_formatter_plain' => array(
       'arguments' => array('element' => NULL),
     ),
+    'link_formatter_url' => array(
+      'arguments' => array('element' => NULL),
+    ),
     'link_formatter_short' => array(
       'arguments' => array('element' => NULL),
     ),
@@ -491,12 +494,17 @@ function link_process($element, $edit, $form_state, $form) {
 function link_field_formatter_info() {
   return array(
     'default' => array(
-      'label' => t('Default, as link with title'),
+      'label' => t('Title, as link (default)'),
+      'field types' => array('link'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+    'url' => array(
+      'label' => t('URL, as link'),
       'field types' => array('link'),
       'multiple values' => CONTENT_HANDLE_CORE,
     ),
     'plain' => array(
-      'label' => t('Plain, as the text URL'),
+      'label' => t('URL, as plain text'),
       'field types' => array('link'),
       'multiple values' => CONTENT_HANDLE_CORE,
     ),
@@ -532,6 +540,13 @@ function theme_link_formatter_default($element) {
  */
 function theme_link_formatter_plain($element) {
   return empty($element['#item']['url']) ? check_plain($element['#item']['title']) : check_plain($element['#item']['url']);
+}
+
+/**
+ * Theme function for 'url' text field formatter.
+ */
+function theme_link_formatter_url($element) {
+  return $element['#item']['url'] ? l($element['#item']['display_url'], $element['#item']['url'], $element['#item']) : '';
 }
 
 /**
