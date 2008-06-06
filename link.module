@@ -548,11 +548,15 @@ function theme_link_widget_form_row($element) {
 function link_field_formatter_info() {
   return array(
     'default' => array(
-      'label' => t('Default, as link with title'),
+      'label' => t('Title, as link (default)'),
+      'field types' => array('link'),
+    ),
+    'url' => array(
+      'label' => t('URL, as link'),
       'field types' => array('link'),
     ),
     'plain' => array(
-      'label' => t('Plain, as the text URL'),
+      'label' => t('URL, plain text'),
       'field types' => array('link'),
     ),
     'short' => array(
@@ -598,6 +602,13 @@ function link_field_formatter($field, $item, $formatter, $node) {
     $url = substr($url, 0, strpos($url, '?'));
   }
 
+  // Create a display URL.
+  $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, $query, $fragment, TRUE);
+  if ($field['display']['url_cutoff'] && strlen($display_url) > $field['display']['url_cutoff']) {
+    $display_url = substr($display_url, 0, $field['display']['url_cutoff']) . "...";
+  }
+
+  // Build a list of attributes.
   $attributes = array();
   $item['attributes'] = unserialize($item['attributes']);
   // Add attributes defined at the widget level.
@@ -632,6 +643,10 @@ function link_field_formatter($field, $item, $formatter, $node) {
   elseif ($formatter == 'label') {
     $output = l(t($field['widget']['label']), $url, $attributes, $query, $fragment);
   }
+  // Build the link using the URL as title
+  elseif ($formatter == 'url') {
+    $output = l($display_url, $url, $attributes, $query, $fragment);
+  }
   // Build the link with a title.
   elseif (strlen(trim($item['title'])) || ($field['title'] == 'value' && strlen(trim($field['title_value'])))) {
     // Use the title defined at the field level.
@@ -655,13 +670,8 @@ function link_field_formatter($field, $item, $formatter, $node) {
       $output = l($title, $url, $attributes, $query, $fragment);
     }
   }
-
   // Build the link with the URL or email address as the title (max 80 characters).
   else {
-    $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, $query, $fragment, TRUE);
-    if ($field['display']['url_cutoff'] && strlen($display_url) > $field['display']['url_cutoff']) {
-      $display_url = substr($display_url, 0, $field['display']['url_cutoff']) . "...";
-    }
     $output = l($display_url, $url, $attributes, $query, $fragment);
   }
   return $output;
