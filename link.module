@@ -152,8 +152,8 @@ function link_field_settings($op, $field) {
 
     case 'database columns':
       return array(
-        'url' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''"),
-        'title' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''"),
+        'url' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''", 'sortable' => TRUE),
+        'title' => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => "''", 'sortable' => TRUE),
         'attributes' => array('type' => 'mediumtext', 'not null' => FALSE),
       );
 
@@ -179,10 +179,6 @@ function link_field_settings($op, $field) {
 
     case 'arguments':
       return array(
-        'content: '. $field['field_name'] .'_url' => array(
-          'name' => t('Link URL') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
-          'handler' => 'link_views_argument_handler',
-        ),
         'content: '. $field['field_name'] .'_title' => array(
           'name' => t('Link Title') .': '. t($field['widget']['label']) .' ('. $field['field_name'] .')',
           'handler' => 'link_views_argument_handler',
