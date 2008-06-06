@@ -401,6 +401,9 @@ function link_theme() {
     'link_formatter_label' => array(
       'arguments' => array('element' => NULL),
     ),
+    'link_formatter_separate' => array(
+      'arguments' => array('element' => NULL),
+    ),
     'link' => array(
       'arguments' => array('element' => NULL),
     ),
@@ -518,6 +521,11 @@ function link_field_formatter_info() {
       'field types' => array('link'),
       'multiple values' => CONTENT_HANDLE_CORE,
     ),
+    'separate' => array(
+      'label' => t('Separate title and URL'),
+      'field types' => array('link'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
   );
 }
 
@@ -557,10 +565,22 @@ function theme_link_formatter_short($element) {
 }
 
 /**
- * Theme function for 'short' text field formatter.
+ * Theme function for 'label' text field formatter.
  */
 function theme_link_formatter_label($element) {
   return $element['#item']['url'] ? l($element['#item']['label'], $element['#item']['url'], $element['#item']) : '';
+}
+
+/**
+ * Theme function for 'separate' text field formatter.
+ */
+function theme_link_formatter_separate($element) {
+  $output = '';
+  $output .= '<div class="link-item">';
+  $output .= '<div class="link-title">'. $element['#item']['display_title'] .'</div>';
+  $output .= '<div class="link-url">'. l($element['#item']['display_url'], $element['#item']['url'], $element['#item']) .'</div>';
+  $output .= '</div>';
+  return $output;
 }
 
 function link_token_list($type = 'all') {
