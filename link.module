@@ -578,7 +578,7 @@ function theme_link_formatter_separate($element) {
 
   $output = '';
   $output .= '<div class="link-item '. $class .'">';
-  $output .= '<div class="link-title">'. $element['#item']['display_title'] .'</div>';
+  $output .= '<div class="link-title">'. (empty($element['#item']['title']) ? '' : $element['#item']['display_title']) .'</div>';
   $output .= '<div class="link-url">'. l($element['#item']['display_url'], $element['#item']['url'], $element['#item']) .'</div>';
   $output .= '</div>';
   return $output;
