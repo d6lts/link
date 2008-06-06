@@ -859,7 +859,8 @@ function link_validate_url($text) {
   $internal_pattern = "/^([a-z0-9_\-+\[\]]+)";
 
   $directories = "(\/[a-z0-9_\-\.~+%=&,$'():;*@\[\]]*)*";
-  $query = "(\/?\?([?a-z0-9+_\-\.\/%=&,$'():;*@\[\]]*))";
+   // Yes, four backslashes == a single backslash.
+  $query = "(\/?\?([?a-z0-9+_|\-\.\/\\\\%=&,$'():;*@\[\]]*))";
   $anchor = "(#[a-z0-9_\-\.~+%=&,$'():;*@\[\]]*)";
 
   // The rest of the path for a standard URL.
