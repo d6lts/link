@@ -54,7 +54,7 @@ function link_field_settings($op, $field) {
         '#title' => t('Link Title'),
         '#default_value' => isset($field['title']) ? $field['title'] : 'optional',
         '#options' => $title_options,
-        '#description' => t('If the link title is optional or required, a field will be displayed to the end user. If the link title is static, the link will always use the same title. If <a href="http://drupal.org/project/token">token module</a> is installed, the static title value may use any other node field as its value.'),
+        '#description' => t('If the link title is optional or required, a field will be displayed to the end user. If the link title is static, the link will always use the same title. If <a href="http://drupal.org/project/token">token module</a> is installed, the static title value may use any other node field as its value. Static and token-based titles may include most inline XHTML tags such as <em>strong</em>, <em>em</em>, <em>img</em>, <em>span</em>, etc.'),
       );
 
       $form['title_value'] = array(
@@ -78,7 +78,7 @@ function link_field_settings($op, $field) {
 
         $form['enable_tokens'] = array(
           '#type' => 'checkbox',
-          '#title' => t('Allow tokens'),
+          '#title' => t('Allow user-entered tokens'),
           '#default_value' => isset($field['enable_tokens']) ? $field['enable_tokens'] : 1, 
           '#description' => t('Checking will allow users to enter tokens in URLs and Titles on the node edit form. This does not affect the field settings on this page.'),
         );
@@ -344,7 +344,8 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   // Replace tokens.
   if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
     $token_node = node_load($node->nid); // Necessary for nodes in views.
-    $title = token_replace($title, 'node', $token_node);
+    $title = filter_xss(token_replace($title, 'node', $token_node), array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
+    $item['html'] = TRUE;
   }
   $item['display_title'] = empty($title) ? $item['display_url'] : $title;
 
