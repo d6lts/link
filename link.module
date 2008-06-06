@@ -567,6 +567,10 @@ function link_field_formatter_info() {
       'label' => t('Label, as link with label as title'),
       'field types' => array('link'),
     ),
+    'separate' => array(
+      'label' => t('Separate title and URL'),
+      'field types' => array('link'),
+    ),
   );
 }
 
@@ -647,22 +651,18 @@ function link_field_formatter($field, $item, $formatter, $node) {
   elseif ($formatter == 'url') {
     $output = l($display_url, $url, $attributes, $query, $fragment);
   }
+  // Build the link using the widget label as separate title.
+  elseif ($formatter == 'separate') {
+    $title = _link_field_formatter_title($field, $item, $node);
+    $output = '';
+    $output .= '<div class="link-item">';
+    $output .= '<div class="link-title">'. $title .'</div>';
+    $output .= '<div class="link-url">'. l($display_url, $url, $attributes, $query, $fragment) .'</div>';
+    $output .= '</div>';
+  }
   // Build the link with a title.
   elseif (strlen(trim($item['title'])) || ($field['title'] == 'value' && strlen(trim($field['title_value'])))) {
-    // Use the title defined at the field level.
-    if ($field['title'] == 'value' && strlen(trim($field['title_value']))) {
-      $title = $field['title_value'];
-    }
-    // Use the title defined by the user at the widget level.
-    else {
-      $title = $item['title'];
-    }
-    // Replace tokens.
-    if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
-      $node = node_load($node->nid); // Necessary for nodes in views.
-      $title = token_replace($title, 'node', $node);
-    }
-
+    $title = _link_field_formatter_title($field, $item, $node);
     if (empty($url) && !empty($title)) {
       $output = check_plain($title);
     }
@@ -675,6 +675,26 @@ function link_field_formatter($field, $item, $formatter, $node) {
     $output = l($display_url, $url, $attributes, $query, $fragment);
   }
   return $output;
+}
+
+/**
+ * Helper function for link_field_formatter().
+ */
+function _link_field_formatter_title($field, $item, $node) {
+  // Use the title defined at the field level.
+  if ($field['title'] == 'value' && trim($field['title_value'])) {
+    $title = $field['title_value'];
+  }
+  // Use the title defined by the user at the widget level.
+  else {
+    $title = $item['title'];
+  }
+  // Replace tokens.
+  if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
+    $node = node_load($node->nid); // Necessary for nodes in views.
+    $title = token_replace($title, 'node', $node);
+  }
+  return $title;
 }
 
 /**
