@@ -79,7 +79,7 @@ function link_field_settings($op, $field) {
         $form['enable_tokens'] = array(
           '#type' => 'checkbox',
           '#title' => t('Allow user-entered tokens'),
-          '#default_value' => isset($field['enable_tokens']) ? $field['enable_tokens'] : 1, 
+          '#default_value' => isset($field['enable_tokens']) ? $field['enable_tokens'] : 1,
           '#description' => t('Checking will allow users to enter tokens in URLs and Titles on the node edit form. This does not affect the field settings on this page.'),
         );
       }
@@ -108,14 +108,14 @@ function link_field_settings($op, $field) {
       $form['attributes']['target'] = array(
         '#type' => 'radios',
         '#title' => t('Link Target'),
-        '#default_value' => $field['attributes']['target'] ? $field['attributes']['target'] : 'default',
+        '#default_value' => empty($field['attributes']['target']) ? 'default' : $field['attributes']['target'],
         '#options' => $target_options,
       );
       $form['attributes']['rel'] = array(
         '#type' => 'textfield',
         '#title' => t('Rel Attribute'),
         '#description' => t('When output, this link will have this rel attribute. The most common usage is <a href="http://en.wikipedia.org/wiki/Nofollow">rel=&quot;nofollow&quot;</a> which prevents some search engines from spidering entered links.'),
-        '#default_value' => $field['attributes']['rel'] ? $field['attributes']['rel'] : '',
+        '#default_value' => empty($field['attributes']['rel']) ? '' : $field['attributes']['rel'],
         '#field_prefix' => 'rel = "',
         '#field_suffix' => '"',
         '#size' => 20,
@@ -124,7 +124,7 @@ function link_field_settings($op, $field) {
         '#type' => 'textfield',
         '#title' => t('Additional CSS Class'),
         '#description' => t('When output, this link will have have this class attribute. Multiple classes should be seperated by spaces.'),
-        '#default_value' => isset($field['attributes']['class']) ? $field['attributes']['class'] : '',
+        '#default_value' => empty($field['attributes']['class']) ? '' : $field['attributes']['class'],
       );
       return $form;
 
@@ -145,10 +145,7 @@ function link_field_settings($op, $field) {
       );
 
     case 'views data':
-      if (!empty($field)) {
-        $data = link_views_data($field);
-      }
-      return isset($data) ? $data : NULL;
+      return link_views_content_field_data($field);
   }
 }
 
@@ -288,7 +285,7 @@ function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {
 
 /**
  * Cleanup user-entered values for a link field according to field settings.
- * 
+ *
  * @param $item
  *   A single link item, usually containing url, title, and attributes.
  * @param $delta
@@ -351,7 +348,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
 
   // Add attributes defined at the widget level
   $attributes = array();
-  if (is_array($item['attributes'])) {
+  if (!empty($item['attributes']) && is_array($item['attributes'])) {
     foreach($item['attributes'] as $attribute => $attbvalue) {
       if (isset($item['attributes'][$attribute]) && $field['attributes'][$attribute] == 'user') {
         $attributes[$attribute] = $attbvalue;
@@ -482,7 +479,7 @@ function link_process($element, $edit, $form_state, $form) {
        '#default_value' => isset($element['#value']['title']) ? $element['#value']['title'] : NULL,
      );
    }
-   if ($field['attributes']['target'] == 'user') {
+   if (!empty($field['attributes']['target']) && $field['attributes']['target'] == 'user') {
      $element['attributes']['target'] = array(
        '#type' => 'checkbox',
        '#title' => t('Open URL in a New Window'),
@@ -650,8 +647,8 @@ function link_validate_url($text) {
   $protocol = '((' . implode("|", $allowed_protocols) . '):\/\/)';
   $authentication = '([a-z0-9]+(:[a-z0-9]+)?@)';
   $domain = '((([a-z0-9]([a-z0-9\-_\[\]]*\.))+)('. LINK_DOMAINS .'|[a-z]{2}))';
-  $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})'; 
-  $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})'; 
+  $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})';
+  $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})';
   $port = '(:([0-9]{1,5}))';
 
   // Pattern specific to eternal links.

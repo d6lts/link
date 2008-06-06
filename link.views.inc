@@ -3,7 +3,7 @@
 /**
  * Return CCK Views data for the link_field_settings($op == 'views data').
  */
-function link_views_data($field) {
+function link_views_content_field_data($field) {
   // Build the automatic views data provided for us by CCK.
   // This creates all the information necessary for the "url" field.
   $data = content_views_field_views_data($field);
@@ -165,7 +165,7 @@ class link_views_handler_filter_protocol extends views_handler_filter_string {
     foreach ($protocols as $protocol) {
       // Simple case, the URL begins with the specified protocol.
       $condition = $field . ' LIKE \''. $protocol .'%\'';
-  
+
       // More complex case, no protocol specified but is automatically cleaned up
       // by link_cleanup_url(). RegEx is required for this search operation.
       if ($protocol == 'http') {
@@ -173,12 +173,12 @@ class link_views_handler_filter_protocol extends views_handler_filter_string {
           // PostGreSQL code has NOT been tested. Please report any problems to the link issue queue.
           // pgSQL requires all slashes to be double escaped in regular expressions.
           // See http://www.postgresql.org/docs/8.1/static/functions-matching.html#FUNCTIONS-POSIX-REGEXP
-          $condition .= ' OR '. $field .' ~* \''. '^(([a-z0-9]([a-z0-9\\-_]*\\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\''; 
+          $condition .= ' OR '. $field .' ~* \''. '^(([a-z0-9]([a-z0-9\\-_]*\\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\'';
         }
         else {
           // mySQL requires backslashes to be double (triple?) escaped within character classes.
           // See http://dev.mysql.com/doc/refman/5.0/en/string-comparison-functions.html#operator_regexp
-          $condition .= ' OR '. $field .' REGEXP \''. '^(([a-z0-9]([a-z0-9\\\-_]*\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\''; 
+          $condition .= ' OR '. $field .' REGEXP \''. '^(([a-z0-9]([a-z0-9\\\-_]*\.)+)('. LINK_DOMAINS .'|[a-z][a-z]))' .'\'';
         }
       }
 
