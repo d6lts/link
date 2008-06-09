@@ -15,8 +15,6 @@ function link_views_content_field_data($field) {
   // Tweak the automatic views data for the link "url" field.
   // Set the filter title to "@label URL"
   $data[$table_alias][$field['field_name'] .'_url']['filter']['title'] = t('@label URL', array('@label' => t($field_types[$field['type']]['label']))) .': '. t($field['widget']['label']);
-  // Set the field handler to the basic Views handler, removing the "Link this field to its node" option
-  $data[$table_alias][$field['field_name'] .'_url']['field']['handler'] = 'views_handler_field';
   // Remove the argument handling for URLs.
   unset($data[$table_alias][$field['field_name'] .'_url']['argument']);
 
