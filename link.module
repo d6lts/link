@@ -123,7 +123,7 @@ function link_field_settings($op, $field) {
       $form['attributes']['class'] = array(
         '#type' => 'textfield',
         '#title' => t('Additional CSS Class'),
-        '#description' => t('When output, this link will have have this class attribute. Multiple classes should be seperated by spaces.'),
+        '#description' => t('When output, this link will have have this class attribute. Multiple classes should be separated by spaces.'),
         '#default_value' => empty($field['attributes']['class']) ? '' : $field['attributes']['class'],
       );
       return $form;
@@ -310,12 +310,12 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   $type = link_validate_url($item['url']);
   $url = link_cleanup_url($item['url']);
 
-  // Seperate out the anchor if any.
+  // Separate out the anchor if any.
   if (strpos($url, '#') !== FALSE) {
     $item['fragment'] = substr($url, strpos($url, '#') + 1);
     $url = substr($url, 0, strpos($url, '#'));
   }
-  // Seperate out the query string if any.
+  // Separate out the query string if any.
   if (strpos($url, '?') !== FALSE) {
     $item['query'] = substr($url, strpos($url, '?') + 1);
     $url = substr($url, 0, strpos($url, '?'));
