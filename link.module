@@ -139,8 +139,8 @@ function link_field_settings($op, $field) {
 
     case 'database columns':
       return array(
-        'url' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE),
-        'title' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE),
+        'url' => array('type' => 'varchar', 'length' => 1024, 'not null' => FALSE, 'sortable' => TRUE),
+        'title' => array('type' => 'varchar', 'length' => 1024, 'not null' => FALSE, 'sortable' => TRUE),
         'attributes' => array('type' => 'text', 'size' => 'medium', 'not null' => FALSE),
       );
 
