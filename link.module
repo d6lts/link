@@ -182,7 +182,6 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
       foreach ($items as $delta => $item) {
         _link_load($items[$delta], $delta);
       }
-      return $items;
       break;
 
     case 'validate':
