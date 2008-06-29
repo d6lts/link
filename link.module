@@ -215,7 +215,6 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
       foreach ($items as $delta => $item) {
         $items[$delta]['attributes'] = unserialize($item['attributes']);
       }
-      return $items;
       break;
     case 'view':
       foreach ($items as $delta => $item) {
