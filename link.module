@@ -196,9 +196,9 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
       }
       break;
 
-    case 'process form values':
+    case 'presave':
       foreach($items as $delta => $value) {
-        _link_process($items[$delta],$delta, $field, $node);
+        _link_process($items[$delta], $delta, $field, $node);
       }
       break;
 
