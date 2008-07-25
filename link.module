@@ -587,8 +587,9 @@ function link_field_formatter($field, $item, $formatter, $node) {
 
   // Replace URL tokens.
   if (module_exists('token') && $field['enable_tokens']) {
-    $node = node_load($node->nid); // Necessary for nodes in views.
-    $item['url'] = token_replace($item['url'], 'node', $node);
+    // Load the node if necessary for nodes in views.
+    $token_node = isset($node->nid) ? node_load($node->nid) : $node;
+    $item['url'] = token_replace($item['url'], 'node', $token_node);
   }
 
   $type = link_validate_url($item['url']);
@@ -694,8 +695,9 @@ function _link_field_formatter_title(&$field, &$item, &$node) {
   // Replace tokens.
   $item['html'] = FALSE;
   if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
-    $node = node_load($node->nid); // Necessary for nodes in views.
-    $title = filter_xss(token_replace($title, 'node', $node), array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
+    // Load the node if necessary for nodes in views.
+    $token_node = isset($node->nid) ? node_load($node->nid) : $node;
+    $title = filter_xss(token_replace($title, 'node', $token_node), array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
     $item['html'] = TRUE;
   }
   return $title;
