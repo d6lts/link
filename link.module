@@ -302,7 +302,8 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
 
   // Replace URL tokens.
   if (module_exists('token') && $field['enable_tokens']) {
-    $token_node = node_load($node->nid); // Necessary for nodes in views.
+    // Load the node if necessary for nodes in views.
+    $token_node = isset($node->nid) ? node_load($node->nid) : $node;
     $item['url'] = token_replace($item['url'], 'node', $token_node);
   }
 
@@ -339,7 +340,8 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   }
   // Replace tokens.
   if (module_exists('token') && ($field['title'] == 'value' || $field['enable_tokens'])) {
-    $token_node = node_load($node->nid); // Necessary for nodes in views.
+    // Load the node if necessary for nodes in views.
+    $token_node = isset($node->nid) ? node_load($node->nid) : $node;
     $title = filter_xss(token_replace($title, 'node', $token_node), array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
     $item['html'] = TRUE;
   }
