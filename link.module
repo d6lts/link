@@ -145,6 +145,7 @@ function link_field_settings($op, $field) {
       );
 
     case 'views data':
+      module_load_include('inc', 'link', 'views/link.views');
       return link_views_content_field_data($field);
   }
 }
@@ -603,10 +604,20 @@ function link_token_values($type, $object = NULL) {
 
     $tokens['url'] = $item['url'];
     $tokens['title'] = $item['title'];
-    $tokens['view'] = $item['view'];
+    $tokens['view'] = isset($item['view']) ? $item['view'] : '';
 
     return $tokens;
   }
+}
+
+/**
+ * Implementation of hook_views_api().
+ */
+function link_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'link') . '/views',
+  );
 }
 
 /**
