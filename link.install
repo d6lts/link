@@ -5,6 +5,7 @@
  * Implementation of hook_install().
  */
 function link_install() {
+  drupal_load('module', 'content');
   content_notify('install', 'link');
 }
 
@@ -12,6 +13,7 @@ function link_install() {
 * Implementation of hook_uninstall().
 */
 function link_uninstall() {
+  drupal_load('module', 'content');
   content_notify('uninstall', 'link');
 }
 
@@ -19,6 +21,7 @@ function link_uninstall() {
 * Implementation of hook_enable().
 */
 function link_enable() {
+  drupal_load('module', 'content');
   content_notify('enable', 'link');
 }
 
@@ -26,6 +29,7 @@ function link_enable() {
 * Implementation of hook_disable().
 */
 function link_disable() {
+  drupal_load('module', 'content');
   content_notify('disable', 'link');
 }
 
