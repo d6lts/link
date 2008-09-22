@@ -45,7 +45,7 @@ function link_views_content_field_data($field) {
     'argument' => array(
       'field' => $db_info['columns']['title']['column'],
       'tablename' => $db_info['table'],
-      'handler' => 'views_handler_argument_string_content',
+      'handler' => 'content_handler_argument_string',
       'click sortable' => TRUE,
       'name field' => '', // TODO, mimic content.views.inc :)
       'content_field_name' => $field['field_name'],
@@ -55,7 +55,7 @@ function link_views_content_field_data($field) {
       'field' => $db_info['columns']['title']['column'],
       'title' => t('@label title', array('@label' => t($field_types[$field['type']]['label']))),
       'tablename' => $db_info['table'],
-      'handler' => 'views_handler_filter_string_content',
+      'handler' => 'content_handler_filter_string',
       'additional fields' => array(),
       'content_field_name' => $field['field_name'],
       'allow_empty' => TRUE,
@@ -63,7 +63,7 @@ function link_views_content_field_data($field) {
     'sort' => array(
       'field' => $db_info['columns']['title']['column'],
       'tablename' => $db_info['table'],
-      'handler' => 'views_handler_sort_content',
+      'handler' => 'content_handler_sort',
       'content_field_name' => $field['field_name'],
       'allow_empty' => TRUE,
     ),
