@@ -36,6 +36,6 @@ function link_disable() {
 /**
  * Implementation of hook_update_last_removed().
  */
-function system_update_last_removed() {
+function link_update_last_removed() {
   return 1;
 }
