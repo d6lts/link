@@ -678,10 +678,10 @@ function link_validate_url($text) {
   $anchor = "(#[a-z0-9_\-\.~+%=&,$'():;*@\[\]]*)";
 
   // The rest of the path for a standard URL.
-  $end = $directories . '?' . $query . '?' .  $anchor . '?' . '$/i';
+  $end = $directories . '?' . $query . '?' . $anchor . '?' . '$/i';
 
   $user = '[a-zA-Z0-9_\-\.\+\^!#\$%&*+\/\=\?\`\|\{\}~\'\[\]]+';
-  $email_pattern = '/^mailto:' . $user . '@' . '(' . $domain . '|' . $ipv4 .'|'. $ipv6 . '|localhost)' . $query . '$/';
+  $email_pattern = '/^mailto:' . $user . '@' . '(' . $domain . '|' . $ipv4 .'|'. $ipv6 . '|localhost)' . $query . '?$/';
 
   if (strpos($text, '<front>') === 0) {
     return LINK_FRONT;
