@@ -216,7 +216,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
 function link_widget_info() {
   return array(
     'link' => array(
-      'label' => 'Text Fields for Title and URL',
+      'label' => 'Link',
       'field types' => array('link'),
       'multiple values' => CONTENT_HANDLE_CORE,
     ),
