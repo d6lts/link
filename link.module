@@ -547,7 +547,7 @@ function theme_link_formatter_default($element) {
  * Theme function for 'plain' text field formatter.
  */
 function theme_link_formatter_plain($element) {
-  return empty($element['#item']['url']) ? check_plain($element['#item']['title']) : check_plain($element['#item']['url']);
+  return empty($element['#item']['url']) ? check_plain($element['#item']['title']) : url($element['#item']['url'], $element['#item']);
 }
 
 /**
