@@ -434,8 +434,8 @@ function theme_link($element) {
   }
   $output .= '<div class="link-field-url' . (isset($element['title']) ? ' link-field-column' : '') . '">' . theme('textfield', $element['url']) . '</div>';
   $output .= '</div>';
-  if (!empty($element['attributes'])) {
-    $output .= '<div class="link-attributes">' . theme('form_element', $element['attributes'], $element['attributes']['#value']) . '</div>';
+  if (!empty($element['attributes']['target'])) {
+    $output .= '<div class="link-attributes">' . theme('checkbox', $element['attributes']['target']) . '</div>';
   }
   return $output;
 }
@@ -447,7 +447,6 @@ function link_elements() {
   $elements = array();
   $elements['link'] =  array(
     '#input' => TRUE,
-    '#columns' => array('url', 'title'),
     '#process' => array('link_process'),
   );
   return $elements;
@@ -482,10 +481,12 @@ function link_process($element, $edit, $form_state, $form) {
      );
    }
    if (!empty($field['attributes']['target']) && $field['attributes']['target'] == 'user') {
+     $attributes = is_array($element['#value']['attributes'])? $element['#value']['attributes'] : unserialize($element['#value']['attributes']);
      $element['attributes']['target'] = array(
        '#type' => 'checkbox',
        '#title' => t('Open URL in a New Window'),
        '#return_value' => "_blank",
+       '#default_value' => isset($attributes['target']) ? $attributes['target'] : NULL,
      );
    }
    return $element;
