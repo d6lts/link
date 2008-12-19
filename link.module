@@ -516,7 +516,7 @@ function theme_link_widget_form($element) {
       $element[0]['url']['#title'] = $element['#title'];
       $element[0]['url']['#description'] = $element['#description'];
     }
-    $output = drupal_render($element[0]);
+    $output = drupal_render($element);
   }
 
   return $output;
