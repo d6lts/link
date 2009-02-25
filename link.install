@@ -39,3 +39,13 @@ function link_disable() {
 function link_update_last_removed() {
   return 1;
 }
+
+/**
+ * Ensure that content.module is updated before link module.
+ */
+function link_update_6000() {
+  if ($abort = content_check_update('link')) {
+    return $abort;
+  }
+  return array();
+}
