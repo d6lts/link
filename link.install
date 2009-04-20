@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+ * @file
+ * Install file for the link module.
+ */
+
+/**
  * Implementation of hook_install().
  */
 function link_install() {

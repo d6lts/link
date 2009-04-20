@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+ * @file
+ * Argument handler to filter results by target.
+ */
+
+/**
  * Argument handler to filter results by target.
  */
 class link_views_handler_argument_target extends views_handler_argument {
