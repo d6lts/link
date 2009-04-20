@@ -10,7 +10,7 @@ define('LINK_EXTERNAL', 'external');
 define('LINK_INTERNAL', 'internal');
 define('LINK_FRONT', 'front');
 define('LINK_EMAIL', 'email');
-define('LINK_DOMAINS', 'aero|arpa|biz|com|cat|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|local');
+define('LINK_DOMAINS', 'aero|arpa|asia|biz|com|cat|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|local');
 
 /**
  * Implementation of hook_field_info().
