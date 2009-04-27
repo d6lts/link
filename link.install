@@ -46,6 +46,23 @@ function link_update_last_removed() {
 }
 
 /**
+ * Removed link.module created tables, move data to content.module tables
+ *
+ * Even though most everyone will not be using this particular update, several
+ * folks have complained that their upgrades of link.module do not work because
+ * of this function being missing when schema expects it. - JCF
+ * And on further review, I'm removing the body, since some of those calls
+ * no longer exist in Drupal 6.  Remember to upgrade from 4.7 to 5 first, and
+ * *then* from 5 to 6.  kthx! -JCF
+ */
+function link_update_1() {
+  $ret = array();
+  // GNDN
+  return $ret;
+}
+
+
+/**
  * Ensure that content.module is updated before link module.
  */
 function link_update_6000() {
