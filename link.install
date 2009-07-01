@@ -39,13 +39,6 @@ function link_disable() {
 }
 
 /**
- * Implementation of hook_update_last_removed().
- */
-function link_update_last_removed() {
-  return 1;
-}
-
-/**
  * Removed link.module created tables, move data to content.module tables
  *
  * Even though most everyone will not be using this particular update, several
