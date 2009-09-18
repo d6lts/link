@@ -250,12 +250,14 @@ function _link_load(&$item, $delta = 0) {
 }
 
 function _link_process(&$item, $delta = 0, $field, $node) {
-  // Remove the target attribute if not selected.
-  if (!$item['attributes']['target'] || $item['attributes']['target'] == LINK_TARGET_DEFAULT) {
-    unset($item['attributes']['target']);
-  }
   // Trim whitespace from URL.
   $item['url'] = trim($item['url']);
+
+  // if no attributes are set use the default attributes.
+  if (empty($item['attributes'])) {
+    $item['attributes'] = _link_default_attributes();
+  }
+
   // Serialize the attributes array.
   $item['attributes'] = serialize($item['attributes']);
 
@@ -353,31 +355,30 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   }
   $item['display_title'] = empty($title) ? $item['display_url'] : $title;
 
-  // Add attributes defined at the widget level
-  $attributes = array();
-  if (!empty($item['attributes']) && is_array($item['attributes'])) {
-    foreach ($item['attributes'] as $attribute => $attbvalue) {
-      if (isset($item['attributes'][$attribute]) && $field['attributes'][$attribute] == LINK_TARGET_USER) {
-        $attributes[$attribute] = $attbvalue;
-       }
-     }
-   }
-  // Add attributes defined at the field level
-  if (is_array($field['attributes'])) {
-    foreach ($field['attributes'] as $attribute => $attbvalue) {
-      if (!empty($attbvalue) && $attbvalue != LINK_TARGET_DEFAULT && $attbvalue != LINK_TARGET_USER) {
-        $attributes[$attribute] = $attbvalue;
-      }
-    }
+  // Add default attributes.
+  $field['attributes'] += _link_default_attributes();
+
+  // Merge item attributes with attributes defined at the field level.
+  $item['attributes'] += $field['attributes'];
+
+  // If user is not allowed to choose target attribute, use default defined at
+  // field level.
+  if ($field['attributes']['target'] != LINK_TARGET_USER) {
+    $item['attributes']['target'] = $field['attributes']['target'];
   }
+
+  // Remove the target attribute if the default (no target) is selected.
+  if (empty($item['attributes']) || $item['attributes']['target'] == LINK_TARGET_DEFAULT) {
+    unset($item['attributes']['target']);
+  }
+
   // Remove the rel=nofollow for internal links.
-  if ($type != LINK_EXTERNAL && isset($attributes['rel']) && strpos($attributes['rel'], 'nofollow') !== FALSE) {
-    $attributes['rel'] = str_replace('nofollow', '', $attributes['rel']);
-    if (empty($attributes['rel'])) {
-      unset($attributes['rel']);
-    }
+  if ($type != LINK_EXTERNAL && strpos($item['attributes']['rel'], 'nofollow') !== FALSE) {
+    $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']);
   }
-  $item['attributes'] = $attributes;
+
+  // Remove empty attributes.
+  $item['attributes'] = array_filter($item['attributes']);
 
   // Add the widget label.
   $item['label'] = $field['widget']['label'];
@@ -457,6 +458,14 @@ function link_elements() {
   return $elements;
 }
 
+function _link_default_attributes() {
+  return array(
+    'target' => LINK_TARGET_DEFAULT,
+    'class' => '',
+    'rel' => '',
+  );
+}
+
 /**
  * Process the link type element before displaying the field.
  *
@@ -485,13 +494,20 @@ function link_process($element, $edit, $form_state, $form) {
        '#default_value' => isset($element['#value']['title']) ? $element['#value']['title'] : NULL,
      );
    }
+
+   // Initialize field attributes as an array if it is not an array yet.
+   if (!is_array($field['attributes'])) {
+     $field['attributes'] = array();
+   }
+   // Add default atrributes.
+   $field['attributes'] += _link_default_attributes();
+   $attributes = isset($element['#value']['attributes']) ? $element['#value']['attributes'] : $field['attributes'];
    if (!empty($field['attributes']['target']) && $field['attributes']['target'] == LINK_TARGET_USER) {
-     $attributes = is_array($element['#value']['attributes'])? $element['#value']['attributes'] : unserialize($element['#value']['attributes']);
      $element['attributes']['target'] = array(
        '#type' => 'checkbox',
        '#title' => t('Open URL in a New Window'),
        '#return_value' => LINK_TARGET_NEW_WINDOW,
-       '#default_value' => isset($attributes['target']) ? $attributes['target'] : NULL,
+       '#default_value' => $attributes['target'],
      );
    }
    return $element;
