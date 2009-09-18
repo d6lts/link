@@ -185,10 +185,7 @@ function link_content_is_empty($item, $field) {
 function link_field($op, &$node, $field, &$items, $teaser, $page) {
   switch ($op) {
     case 'load':
-      foreach ($items as $delta => $item) {
-        _link_load($items[$delta], $delta);
-      }
-      break;
+      return _link_load($field, $items);
 
     case 'validate':
       $optional_field_found = FALSE;
@@ -244,9 +241,12 @@ function link_widget(&$form, &$form_state, $field, $items, $delta = 0) {
   return $element;
 }
 
-function _link_load(&$item, $delta = 0) {
-  // Unserialize the attributes array.
-  $item['attributes'] = unserialize($item['attributes']);
+function _link_load($field, &$items) {
+  foreach ($items as $delta => $item) {
+    // Unserialize the attributes array.
+    $items[$delta]['attributes'] = unserialize($item['attributes']);
+  }
+  return array($field['field_name'] => $items);
 }
 
 function _link_process(&$item, $delta = 0, $field, $node) {
