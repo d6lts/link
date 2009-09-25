@@ -355,6 +355,11 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   }
   $item['display_title'] = empty($title) ? $item['display_url'] : $title;
 
+  // Unserialize attributtes array if it has not been unserialized yet.
+  if (!is_array($item['attributes'])) {
+    $item['attributes'] = unserialize($item['attributes']);
+  }
+
   // Add default attributes.
   $field['attributes'] += _link_default_attributes();
 
