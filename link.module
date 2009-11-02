@@ -608,10 +608,13 @@ function theme_link_formatter_label($element) {
 function theme_link_formatter_separate($element) {
   $class = empty($element['#item']['attributes']['class']) ? '' : ' '. $element['#item']['attributes']['class'];
   unset($element['#item']['attributes']['class']);
+  $title = empty($element['#item']['title']) ? '' : check_plain($element['#item']['title']);
 
   $output = '';
   $output .= '<div class="link-item '. $class .'">';
-  $output .= '<div class="link-title">'. (empty($element['#item']['title']) ? '' : $element['#item']['display_title']) .'</div>';
+  if (!empty($title)) {
+    $output .= '<div class="link-title">'. $title .'</div>';
+  }
   $output .= '<div class="link-url">'. l($element['#item']['display_url'], $element['#item']['url'], $element['#item']) .'</div>';
   $output .= '</div>';
   return $output;
