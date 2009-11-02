@@ -653,7 +653,7 @@ function link_field_formatter($field, $item, $formatter, $node) {
   }
   // Build the link using the widget label as separate title.
   elseif ($formatter == 'separate') {
-    $title = _link_field_formatter_title($field, $item, $node);
+    $title = check_plain(_link_field_formatter_title($field, $item, $node));
     $class = empty($field['attributes']['class']) ? '' : ' '. $field['attributes']['class'];
     unset($field['attributes']['class']);
 
