@@ -44,7 +44,7 @@ function link_field_settings($op, $field) {
         '#title' => t('Optional URL'),
         '#default_value' => $field['url'],
         '#return_value' => 'optional',
-        '#description' => t('If checked, the URL field is optional and submitting a title alone will be acceptable. If the URL is ommitted, the title will be displayed as plain text.'),
+        '#description' => t('If checked, the URL field is optional and submitting a title alone will be acceptable. If the URL is omitted, the title will be displayed as plain text.'),
       );
 
       $title_options = array(
