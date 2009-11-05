@@ -361,7 +361,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
 
   // Unserialize attributtes array if it has not been unserialized yet.
   if (!is_array($item['attributes'])) {
-    $item['attributes'] = unserialize($item['attributes']);
+    $item['attributes'] = (array)unserialize($item['attributes']);
   }
 
   // Add default attributes.
