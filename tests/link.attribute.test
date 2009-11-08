@@ -66,29 +66,39 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
                          $group);
   }
   
+  /**
+   * A simple test that just creates a new node type, adds a link field to it, creates a new node of that type, and makes sure
+   * that the node is being displayed.
+   */
   function testBasic() {
     $this->acquireContentTypes(1);
+    variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
     $field_settings = array(
       'type' => 'link',
       'widget_type' => 'link',
       'type_name' => $this->content_types[0]->name,
-      'attributes' => array(),
+      'attributes' => array(), // <-- This is needed or we have an error.
     );
 
     $field = $this->createField($field_settings, 0);
-    $this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
     $field_db_info = content_database_info($field);
 
     $this->acquireNodes(2);
 
     $node = node_load($this->nodes[0]->nid);
+    $node->promote = 1; // We want this to show on front page for the teaser test.
     $node->{$field['field_name']}[0] = $this->createLink('http://www.example.com', 'Test Link');
     node_save($node);
 
+    // Does this display on the node page?
     $this->drupalGet('node/'. $this->nodes[0]->nid);
-    //$this->outputScreenContents('Display link', 'link_');
+    $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com'));
     
-    //$this->assertFieldById($cssFieldLocator, '', 'Looking for the created field '. $cssFieldLocator .' without value.');
+    // Does this display on the front page?
+    $this->drupalGet('<front>');
+    // reset the zebra!
+    $this->zebra = 0;
     $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com'));
   }
   
