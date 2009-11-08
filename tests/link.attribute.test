@@ -72,10 +72,11 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
       'type' => 'link',
       'widget_type' => 'link',
       'type_name' => $this->content_types[0]->name,
+      'attributes' => array(),
     );
 
     $field = $this->createField($field_settings, 0);
-    $this->pass(print_r($field, TRUE));
+    $this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
     $field_db_info = content_database_info($field);
 
     $this->acquireNodes(2);
