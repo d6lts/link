@@ -564,7 +564,6 @@ function link_field_formatter_info() {
  * Theme function for 'default' text field formatter.
  */
 function theme_link_formatter_default($element) {
-  //drupal_set_message('<pre>'. print_r($element['#item'], TRUE) .'</pre>');
   // Display a normal link if both title and URL are available.
   if (!empty($element['#item']['display_title']) && !empty($element['#item']['url'])) {
     return l($element['#item']['display_title'], $element['#item']['url'], $element['#item']);
