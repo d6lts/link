@@ -102,4 +102,44 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com'));
   }
   
+  /**
+   * This test sees that we can create a link field with a defined class, and make sure
+   * that class displays properly when the link is displayed.
+   */
+  function testLinkWithClassOnField() {
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => 'test-class',
+        'target' => 'default',
+        'rel' => FALSE,
+      ),
+    );
+    
+    $field = $this->createField($field_settings, 0);
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    $node->promote = 1; // We want this to show on front page for the teaser test.
+    $node->{$field['field_name']}[0] = $this->createLink('http://www.example.com', 'Test Link');
+    node_save($node);
+    
+    // Does this display on the node page?
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    //$this->outputScreenContents('Link field with class', 'link_');
+    $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('class' => 'test-class'))));
+    
+    // Does this display on the front page?
+    $this->drupalGet('<front>');
+    // reset the zebra!
+    $this->zebra = 0;
+    $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('class' => 'test-class'))));
+  }
+  
 }
