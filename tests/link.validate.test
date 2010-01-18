@@ -1,0 +1,116 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Tests that exercise the validation functions in the link module.
+ */
+
+// Let's include the parent class.
+module_load_include('test', 'content', 'tests/content.crud');
+
+class LinkValidateTest extends ContentCrudTestCase {
+  
+  public $permissions = array(
+      'access content',
+      'administer content types',
+      'administer nodes',
+      'administer filters',
+      'access comments',
+      'post comments',
+      'post comments without approval',
+      'access administration pages',
+  );
+  
+  function getInfo() {
+    return array(
+      'name' => t('Link Validation Tests'),
+      'description' => t('Tests the field validation.'),
+      'group' => t('Link'),
+    );
+  }
+  
+  function setUp() {
+    parent::setUp('link');
+    $this->loginWithPermissions($this->permissions);
+  }
+  
+  function createLink($url, $title, $attributes = array()) {
+    return array(
+      'url' => $url,
+      'title' => $title,
+      'attributes' => $attributes,
+    );
+  }
+  
+  function test_link_validate_basic_url() {
+    $this->acquireContentTypes(1);
+    variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(), // <-- This is needed or we have an error.
+    );
+
+    $field = $this->createField($field_settings, 0);
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'http://www.example.com';
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    $this->assertText(t('@type @title has been updated.',
+                        array('@title' => $node->title,
+                              '@type' => $this->content_types[0]->name)));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertEqual('http://www.example.com', $node->{$field['field_name']}[0]['url']);
+    
+  }
+  
+  function test_link_validate_bad_url() {
+    $this->acquireContentTypes(1);
+    variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(), // <-- This is needed or we have an error.
+    );
+
+    $field = $this->createField($field_settings, 0);
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    /*$node->{$field['field_name']}[0] = $this->createLink('edik:naw', 'Test Link');
+    node_save($node);*/
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'edik:naw';
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    //$this->pass($this->content);
+    $this->assertText(t('Not a valid URL.'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertNotEqual('edik:naw', $node->{$field['field_name']}[0]['url']);
+    
+  }
+
+}
