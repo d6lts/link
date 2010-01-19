@@ -147,6 +147,14 @@ function link_field_settings($op, $field) {
         '#description' => t('When output, this link will have have this class attribute. Multiple classes should be separated by spaces.'),
         '#default_value' => empty($field['attributes']['class']) ? '' : $field['attributes']['class'],
       );
+      $form['attributes']['title'] = array(
+        '#title' => t("Link 'title' Attribute"),
+        '#type' => 'textfield',
+        '#field_prefix' => 'title = "',
+        '#field_suffix' => '"',
+        '#description' => t('When output, links will have this "title" attribute. Read <a href="http://www.w3.org/TR/WCAG10-HTML-TECHS/#links">WCAG Guidelines</a> for links comformances. Tokens values will be evaluated.'),
+        '#default_value' => empty($field['attributes']['title']) ? '' : $field['attributes']['title'],
+      );
       return $form;
 
     case 'validate':
@@ -402,6 +410,12 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']);
   }
 
+  // Handle "title" link attribute
+  if (!empty($attributes['title']) && module_exists('token')) {
+    // Load the node (necessary for nodes in views)
+    $token_node = isset($node->nid) ? node_load($node->nid) : $node;
+    $item['attributes']['title'] = token_replace($attributes['title'], 'node', $token_node);
+  }
   // Remove empty attributes.
   $item['attributes'] = array_filter($item['attributes']);
 
@@ -485,6 +499,7 @@ function link_elements() {
 
 function _link_default_attributes() {
   return array(
+    'title' => '',
     'target' => LINK_TARGET_DEFAULT,
     'class' => '',
     'rel' => '',
