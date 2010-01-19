@@ -9,9 +9,8 @@
 // Let's include the parent class.
 module_load_include('test', 'content', 'tests/content.crud');
 
-class LinkValidateTest extends ContentCrudTestCase {
-  
-  public $permissions = array(
+class LinkValidateTestCase extends ContentCrudTestCase {
+    public $permissions = array(
       'access content',
       'administer content types',
       'administer nodes',
@@ -21,15 +20,7 @@ class LinkValidateTest extends ContentCrudTestCase {
       'post comments without approval',
       'access administration pages',
   );
-  
-  function getInfo() {
-    return array(
-      'name' => t('Link Validation Tests'),
-      'description' => t('Tests the field validation.'),
-      'group' => t('Link'),
-    );
-  }
-  
+    
   function setUp() {
     parent::setUp('link');
     $this->loginWithPermissions($this->permissions);
@@ -43,7 +34,10 @@ class LinkValidateTest extends ContentCrudTestCase {
     );
   }
   
-  function test_link_validate_basic_url() {
+  /**
+   * Takes a url, and sees if it can validate that the url is valid.
+   */
+  function link_test_validate_url($url) {
     $this->acquireContentTypes(1);
     variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
     $field_settings = array(
@@ -54,27 +48,44 @@ class LinkValidateTest extends ContentCrudTestCase {
     );
 
     $field = $this->createField($field_settings, 0);
-    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+
     $field_db_info = content_database_info($field);
 
-    $this->acquireNodes(2);
+    $this->acquireNodes(1);
+    //$this->fail("We now have ". count($this->nodes) ." nodes.");
     
     $node = node_load($this->nodes[0]->nid);
     
     $this->drupalGet('node/'. $this->nodes[0]->nid);
     
     $edit = array();
-    $edit[$field['field_name'] .'[0][url]'] = 'http://www.example.com';
+    $edit[$field['field_name'] .'[0][url]'] = $url;
     
     $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
     $this->assertText(t('@type @title has been updated.',
                         array('@title' => $node->title,
                               '@type' => $this->content_types[0]->name)));
     
-    // Make sure we get a new version!
-    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
-    $this->assertEqual('http://www.example.com', $node->{$field['field_name']}[0]['url']);
     
+    $this->assertEqual($url, $node->{$field['field_name']}[0]['url']);
+  }
+}
+
+class LinkValidateTest extends LinkValidateTestCase {
+  
+  function getInfo() {
+    return array(
+      'name' => t('Link Validation Tests'),
+      'description' => t('Tests the field validation.'),
+      'group' => t('Link'),
+    );
+  }
+  
+  function test_link_validate_basic_url() {
+    $this->link_test_validate_url('http://www.example.com');
   }
   
   function test_link_validate_bad_url() {
@@ -95,9 +106,6 @@ class LinkValidateTest extends ContentCrudTestCase {
     
     $node = node_load($this->nodes[0]->nid);
     
-    /*$node->{$field['field_name']}[0] = $this->createLink('edik:naw', 'Test Link');
-    node_save($node);*/
-    
     $this->drupalGet('node/'. $this->nodes[0]->nid);
     
     $edit = array();
@@ -112,5 +120,68 @@ class LinkValidateTest extends ContentCrudTestCase {
     $this->assertNotEqual('edik:naw', $node->{$field['field_name']}[0]['url']);
     
   }
+  
+  // Validate that '<front>' is a valid url.
+  function test_link_front_url() {
+    $this->link_test_validate_url('<front>');
+  }
+  
+  // Validate that an internal url would be accepted.
+  function test_link_internal_url() {
+    $this->link_test_validate_url('node/32');
+  }
+  
+  // Validate a simple mailto.
+  function test_link_mailto() {
+    $this->link_test_validate_url('mailto:jcfiala@gmail.com');
+  }
 
+  function test_link_external_https() {
+    $this->link_test_validate_url('https://www.example.com/');
+  }
+  
+  function test_link_ftp() {
+    $this->link_test_validate_url('ftp://www.example.com/');
+  }
+}
+
+class LinkValidateTestNews extends LinkValidateTestCase {
+  
+  function getInfo() {
+    return array(
+      'name' => t('Link News Validation Tests'),
+      'description' => t('Tests the field validation for usenet urls.'),
+      'group' => t('Link'),
+    );
+  }
+  
+  // Validate a news link to a message group
+  function test_link_news() {
+    $this->link_test_validate_url('news:comp.infosystems.www.misc');
+  }
+  
+  // Validate a news link to a message id.  Said ID copied off of google groups.
+  function test_link_news_message() {
+    $this->link_test_validate_url('news:hj0db8$vrm$1@news.eternal-september.org');
+  }
+}
+
+class LinkValidateSpecificURL extends LinkValidateTestCase {
+  function getInfo() {
+    return array(
+      'name' => t('Link Unusual URL Validation Tests'),
+      'description' => t('Tests field validation with unusual urls'),
+      'group' => t('Link'),
+    );
+  }
+  
+  // Lets throw in a lot of umlouts for testing!
+  function test_umlout_url() {
+    $this->link_test_validate_url('http://üÜü.exämple.com/nöde');
+  }
+  
+  function test_umlout_mailto() {
+    $this->link_test_validate_url('mailto:Üser@exÅmple.com');
+  }
+  
 }
