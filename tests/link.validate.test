@@ -169,7 +169,7 @@ class LinkValidateTestNews extends LinkValidateTestCase {
 class LinkValidateSpecificURL extends LinkValidateTestCase {
   function getInfo() {
     return array(
-      'name' => t('Link Unusual URL Validation Tests'),
+      'name' => t('Link Specific URL Validation Tests'),
       'description' => t('Tests field validation with unusual urls'),
       'group' => t('Link'),
     );
@@ -182,6 +182,10 @@ class LinkValidateSpecificURL extends LinkValidateTestCase {
   
   function test_umlout_mailto() {
     $this->link_test_validate_url('mailto:Üser@exÅmple.com');
+  }
+  
+  function test_curly_brackets_in_query() {
+    $this->link_test_validate_url('http://www.healthyteennetwork.org/index.asp?Type=B_PR&SEC={2AE1D600-4FC6-4B4D-8822-F1D5F072ED7B}&DE={235FD1E7-208D-4363-9854-4E6775EB8A4C}');
   }
   
 }
