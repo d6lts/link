@@ -144,7 +144,7 @@ function link_field_settings($op, $field) {
       $form['attributes']['class'] = array(
         '#type' => 'textfield',
         '#title' => t('Additional CSS Class'),
-        '#description' => t('When output, this link will have have this class attribute. Multiple classes should be separated by spaces.'),
+        '#description' => t('When output, this link will have this class attribute. Multiple classes should be separated by spaces.'),
         '#default_value' => empty($field['attributes']['class']) ? '' : $field['attributes']['class'],
       );
       $form['attributes']['title'] = array(
@@ -152,7 +152,7 @@ function link_field_settings($op, $field) {
         '#type' => 'textfield',
         '#field_prefix' => 'title = "',
         '#field_suffix' => '"',
-        '#description' => t('When output, links will have this "title" attribute. Read <a href="http://www.w3.org/TR/WCAG10-HTML-TECHS/#links">WCAG Guidelines</a> for links comformances. Tokens values will be evaluated.'),
+        '#description' => t('When output, links will use this "title" attribute (when different from the link text). Read <a href="http://www.w3.org/TR/WCAG10-HTML-TECHS/#links">WCAG 1.0 Guidelines</a> for links comformances. Tokens values will be evaluated.'),
         '#default_value' => empty($field['attributes']['title']) ? '' : $field['attributes']['title'],
       );
       return $form;
@@ -410,12 +410,17 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']);
   }
 
-  // Handle "title" link attribute
+  // Handle "title" link attribute.
   if (!empty($attributes['title']) && module_exists('token')) {
-    // Load the node (necessary for nodes in views)
+    // Load the node (necessary for nodes in views).
     $token_node = isset($node->nid) ? node_load($node->nid) : $node;
     $item['attributes']['title'] = token_replace($attributes['title'], 'node', $token_node);
   }
+  // Remove title attribute if it's equal to link text.
+  if ($item['attributes']['title'] == $item['display_title']) {
+    unset($item['attributes']['title']);
+  }
+
   // Remove empty attributes.
   $item['attributes'] = array_filter($item['attributes']);
 

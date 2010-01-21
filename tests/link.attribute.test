@@ -236,8 +236,7 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     $url_type = str_replace('_', '-', $this->content_types[0]->type);
   
     $edit = array('attributes[title]' => 'test_data');
-    //$this->drupalGet('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name']);
-    //$this->pass($this->content);
+
     $this->drupalPost('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name'],
                       $edit, t('Save field settings'));
     $this->assertText(t('Saved field @field_name', array('@field_name' => $field['field_name'])));
@@ -251,6 +250,8 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     
     $edit = array();
     $edit[$field['field_name'] .'[0][url]'] = 'http://www.example.com/test';
+    $title = 'title_'. $this->randomName(20);
+    $edit[$field['field_name'] .'[0][title]'] = $title;
     
     $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
     
@@ -261,6 +262,112 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
                               '@type' => $this->content_types[0]->name)));
     
     $this->drupalGet('node/'. $node->nid);
+    $this->assertText($title, 'Make sure the link title/text shows');
     $this->assertRaw(' title="test_data"', "Do we show the title?");
+  }
+  
+  /**
+   * When the title attribute matches the link title, we need to suppress
+   * the title attribute.
+   */
+  function test_Link_With_Title_Attribute_Not_Shown_form() {
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => '',
+        'target' => 'default',
+        'rel' => 'nofollow',
+        'title' => '',
+      ),
+    );
+    
+    $common_title = 'title_'. $this->randomName(20);
+    
+    $field = $this->createField($field_settings, 0);
+    $field_db_info = content_database_info($field);
+    $url_type = str_replace('_', '-', $this->content_types[0]->type);
+  
+    $edit = array('attributes[title]' => $common_title);
+
+    $this->drupalPost('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name'],
+                      $edit, t('Save field settings'));
+    $this->assertText(t('Saved field @field_name', array('@field_name' => $field['field_name'])));
+    
+    // So, having saved this field_name, let's see if it works...
+    $this->acquireNodes(1);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'http://www.example.com/test';
+    $edit[$field['field_name'] .'[0][title]'] = $common_title;
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertText(t('@type @title has been updated.',
+                        array('@title' => $node->title,
+                              '@type' => $this->content_types[0]->name)));
+    
+    $this->drupalGet('node/'. $node->nid);
+    $this->assertRaw('>'. $common_title .'<', 'Make sure the link title/text shows');
+    $this->assertNoRaw(' title="'. $common_title .'"',
+                       "Do we hide the title, since it matches the link title?");
+    $this->pass($this->content);
+  }
+  
+  /**
+   * When the title attribute matches the link title, we need to suppress
+   * the title attribute.
+   */
+  function test_Link_without_title_attribute() {
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => '',
+        'target' => 'default',
+        'rel' => 'nofollow',
+        'title' => '',
+      ),
+    );
+    
+    $common_title = 'title_'. $this->randomName(20);
+    
+    $field = $this->createField($field_settings, 0);
+    $field_db_info = content_database_info($field);
+    $url_type = str_replace('_', '-', $this->content_types[0]->type);
+  
+    // So, having saved this field_name, let's see if it works...
+    $this->acquireNodes(1);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'http://www.example.com/test';
+    $edit[$field['field_name'] .'[0][title]'] = $common_title;
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertText(t('@type @title has been updated.',
+                        array('@title' => $node->title,
+                              '@type' => $this->content_types[0]->name)));
+    
+    $this->drupalGet('node/'. $node->nid);
+    $this->assertRaw('>'. $common_title .'<', 'Make sure the link title/text shows');
+    $this->assertNoRaw(' title=""',
+                       "Do we hide the title, since it is empty?");
   }
 }
