@@ -20,7 +20,7 @@ class LinkContentCrudTest extends ContentCrudTestCase {
   }
   
   function setUp() {
-    parent::setUp('link', 'views');
+    parent::setUp('link'); 
     $this->loginWithPermissions();
   }
   

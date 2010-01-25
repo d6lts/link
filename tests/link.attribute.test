@@ -32,9 +32,9 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     );
   }
   
-  function setup() {
+  function setUp() {
     $this->zebra = 0;
-    parent::setup('link', 'views');
+    parent::setUp('link'); 
     $this->loginWithPermissions($this->permissions);
   }
   
