@@ -46,6 +46,10 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     );
   }
   
+  /**
+   * This usually isn't needed.  $this->pass($this->content); will usually
+   * display the current page.
+   */
   private function outputScreenContents($description, $basename) {
     // This is a hack to get a directory that won't be cleaned up by simpletest
     $file_dir = file_directory_path().'/../simpletest_output_pages';
@@ -168,7 +172,7 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     
     // Does this display on the node page?
     $this->drupalGet('node/'. $this->nodes[0]->nid);
-    $this->outputScreenContents('Link field with class', 'link_');
+    //$this->outputScreenContents('Link field with class', 'link_');
     $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('rel' => 'nofollow'))));
     
     // Does this display on the front page?
@@ -176,6 +180,147 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     // reset the zebra!
     $this->zebra = 0;
     $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('rel' => 'nofollow'))));
+  }
+  
+  function testLinkWithNoFollowOnFieldTargetNewWindow() {
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => '',
+        'target' => LINK_TARGET_NEW_WINDOW,
+        'rel' => 'nofollow',
+      ),
+    );
+    
+    $field = $this->createField($field_settings, 0);
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    $node->promote = 1; // We want this to show on front page for the teaser test.
+    $node->{$field['field_name']}[0] = $this->createLink('http://www.example.com', 'Test Link');
+    node_save($node);
+    
+    // Does this display on the node page?
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    //$this->outputScreenContents('Link field with class', 'link_');
+    $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('target' => '_blank', 'rel' => 'nofollow'))));
+    $this->pass($this->content);
+    
+    // Does this display on the front page?
+    $this->drupalGet('<front>');
+    // reset the zebra!
+    $this->zebra = 0;
+    $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('target' => '_blank', 'rel' => 'nofollow'))));
+  }
+  
+  /**
+   * Trying to reproduce exactly what's in issue #664990
+   *
+   * http://drupal.org/node/664990
+   */
+  function testLinkWithNoFollowOnFieldTargetNewWindowAndAClass() {
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => 'testlink',
+        'target' => LINK_TARGET_NEW_WINDOW,
+        'rel' => 'nofollow',
+      ),
+    );
+    
+    $field = $this->createField($field_settings, 0);
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    $node->promote = 1; // We want this to show on front page for the teaser test.
+    $node->{$field['field_name']}[0] = $this->createLink('http://www.example.com', 'Test Link');
+    node_save($node);
+    
+    // Does this display on the node page?
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    //$this->outputScreenContents('Link field with class', 'link_');
+    $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('class' => 'testlink', 'target' => '_blank', 'rel' => 'nofollow'))));
+    //$this->pass($this->content);
+    
+    // Does this display on the front page?
+    $this->drupalGet('<front>');
+    // reset the zebra!
+    $this->zebra = 0;
+    $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('class' => 'testlink', 'target' => '_blank', 'rel' => 'nofollow'))));
+  }
+
+  /**
+   * Another test for http://drupal.org/node/664990
+   */
+  function test_Link_With_Title_Attribute_WithNoFollowOnFieldTargetNewWindowAndAClass_Form() {
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => '',
+        'target' => 'default',
+        'rel' => 'nofollow',
+        'title' => '',
+      ),
+    );
+    
+    $field = $this->createField($field_settings, 0);
+    $field_db_info = content_database_info($field);
+    $url_type = str_replace('_', '-', $this->content_types[0]->type);
+  
+    $edit = array();
+    $edit['attributes[class]'] = 'testdata';
+    $edit['attributes[target]'] = LINK_TARGET_NEW_WINDOW;
+    $edit['attributes[rel]'] = 'nofollow';
+
+    $this->drupalPost('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name'],
+                      $edit, t('Save field settings'));
+    $this->assertText(t('Saved field @field_name', array('@field_name' => $field['field_name'])));
+    
+    // So, having saved this field_name, let's see if it works...
+    $this->acquireNodes(1);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'http://www.example.com/test';
+    $title = 'title_'. $this->randomName(20);
+    $edit[$field['field_name'] .'[0][title]'] = $title;
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertText(t('@type @title has been updated.',
+                        array('@title' => $node->title,
+                              '@type' => $this->content_types[0]->name)));
+    
+    $this->drupalGet('node/'. $node->nid);
+    $this->assertText($title, 'Make sure the link title/text shows');
+    //$this->assertRaw(' title="test_data"', "Do we show the title?");
+    $this->assertLinkOnNode($field['field_name'],
+                            l($title,
+                              'http://www.example.com/test',
+                              array('attributes' => array('target' => '_blank',
+                                                          'rel' => 'nofollow',
+                                                          'class' => 'testdata'))));
+    $this->pass($this->content);
   }
   
   function test_Link_With_Title_Attribute() {
@@ -370,4 +515,5 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     $this->assertNoRaw(' title=""',
                        "Do we hide the title, since it is empty?");
   }
+  
 }

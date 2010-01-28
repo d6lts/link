@@ -34,6 +34,11 @@ define('LINK_TARGET_TOP', '_top');
 define('LINK_TARGET_USER', 'user');
 
 /**
+ * Maximum URLs length.
+ */
+define('LINK_URL_MAX_LENGTH', 2048);
+
+/**
  * Implementation of hook_field_info().
  */
 function link_field_info() {
@@ -168,7 +173,7 @@ function link_field_settings($op, $field) {
 
     case 'database columns':
       return array(
-        'url' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE),
+        'url' => array('type' => 'varchar', 'length' => LINK_URL_MAX_LENGTH, 'not null' => FALSE, 'sortable' => TRUE),
         'title' => array('type' => 'varchar', 'length' => 255, 'not null' => FALSE, 'sortable' => TRUE),
         'attributes' => array('type' => 'text', 'size' => 'medium', 'not null' => FALSE),
       );
@@ -524,7 +529,7 @@ function link_process($element, $edit, $form_state, $form) {
    $delta = $element['#delta'];
    $element['url'] = array(
      '#type' => 'textfield',
-     '#maxlength' => '255',
+     '#maxlength' => LINK_URL_MAX_LENGTH,
      '#title' => t('URL'),
      '#description' => $element['#description'],
      '#required' => ($delta == 0 && $field['url'] !== 'optional') ? $element['#required'] : FALSE,
