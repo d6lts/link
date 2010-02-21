@@ -382,6 +382,10 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $title = filter_xss(token_replace($title, 'node', $token_node), array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
     $item['html'] = TRUE;
   }
+  elseif ($field['title'] == 'value') {
+    $title = filter_xss($title, array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
+    $item['html'] = TRUE;
+  }
   $item['display_title'] = empty($title) ? $item['display_url'] : $title;
 
   if (!isset($item['attributes'])) {
