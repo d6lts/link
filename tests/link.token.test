@@ -154,7 +154,7 @@ class LinkTokenTest extends DrupalWebTestcase {
       'title' => 'value',
       'title_value' => $name . ' [title-raw]'), t('Save field settings'));
 
-    // Is filed created?
+    // Is field created?
     $this->assertRaw(t('Added field %label.', array('%label' => $name)), 'Field added');
 
     // create page form

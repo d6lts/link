@@ -416,7 +416,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
 
   // Remove the rel=nofollow for internal links.
   if ($type != LINK_EXTERNAL && $type != LINK_NEWS && strpos($item['attributes']['rel'], 'nofollow') !== FALSE) {
-    $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']);
+    $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']['rel']);
   }
 
   // Handle "title" link attribute.
