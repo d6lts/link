@@ -397,7 +397,10 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $item['attributes'] = (array)unserialize($item['attributes']);
   }
 
-  // Add default attributes.
+  // Add default attributes.  Make sure that $field['attributes'] is an array. #626932
+  if (!is_array($field['attributes'])) {
+    $field['attributes'] = array();
+  }
   $field['attributes'] += _link_default_attributes();
 
   // Merge item attributes with attributes defined at the field level.
