@@ -284,6 +284,12 @@ class LinkValidateUrlLight extends DrupalUnitTestCase {
       'http://username:p%40ssw0rd!@www.example.com/',
       'http://@www.example.com/',
       'http://username:@www.example.com/',
+      'http://username:password@www.example.com:8080/',
+      'http://127.0.0.1:80/',
+      'http://127.173.24.255:4723/',
+      '127.173.24.255:4723/',
+      'http://255.255.255.255:4823/',
+      'www.test-site.com',
     );
     // Test all of the protocols.
     $allowed_protocols = variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'));
@@ -302,6 +308,9 @@ class LinkValidateUrlLight extends DrupalUnitTestCase {
     $links = array(
       'http://www.ex ample.com/',
       '//www.example.com/',
+      'http://25.0.0/', // bad ip!
+      'http://4827.0.0.2/',
+      //'http://www.-fudge.com/', // domains can't have sections starting with a dash.
     );
     foreach ($links as $link) {
       $valid = link_validate_url($link);
