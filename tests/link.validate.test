@@ -196,8 +196,117 @@ class LinkValidateSpecificURL extends LinkValidateTestCase {
   function testLinkURLFieldIsBig() {
     $long_url = 'http://th.wikipedia.org/wiki/%E0%B9%82%E0%B8%A3%E0%B8%87%E0%B9%80%E0%B8%A3%E0%B8%B5%E0%B8%A2%E0%B8%99%E0%B9%80%E0%B8%9A%E0%B8%8D%E0%B8%88%E0%B8%A1%E0%B8%A3%E0%B8%B2%E0%B8%8A%E0%B8%B9%E0%B8%97%E0%B8%B4%E0%B8%A8_%E0%B8%99%E0%B8%84%E0%B8%A3%E0%B8%A8%E0%B8%A3%E0%B8%B5%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%A3%E0%B8%B2%E0%B8%8A';
     $this->link_test_validate_url($long_url);
-    
-    
+  }
+}
+
+/**
+ * A series of tests of links, only going against the link_validate_url function in link.module.
+ *
+ * Validation is guided by the rules in http://tools.ietf.org/html/rfc1738 !
+ */
+class LinkValidateUrlLight extends DrupalUnitTestCase {
+  
+  function setUp() {
+    // do we need to include something here?
+  }
+  
+  function getInfo() {
+    return array(
+      'name' => t('Link Light Validation Tests'),
+      'description' => t('Tests the link_validate_url() function by itself, without invoking the full drupal/cck lifecycle.'),
+      'group' => t('Link'),
+    );
+  }
+  
+  /**
+   * Translates the LINK type constants to english for display and debugging of tests
+   */
+  function name_Link_Type($type) {
+    switch ($type) {
+      case LINK_FRONT:
+        return "Front";
+      case LINK_EMAIL:
+        return "Email";
+      case LINK_NEWS:
+        return "Newsgroup";
+      case LINK_INTERNAL:
+        return "Internal Link";
+      case LINK_EXTERNAL:
+        return "External Link";
+      case FALSE:
+        return "Invalid Link";
+      default:
+        return "Bad Value:". $type;
+    }
+  }
+  
+  // Make sure that a link labelled <front> works.
+  function testValidateFrontLink() {
+    $valid = link_validate_url('<front>');
+    $this->assertEqual(LINK_FRONT, $valid, 'Make sure that front link is verfied and identified');
+  }
+  
+  function testValidateEmailLink() {
+    $valid = link_validate_url('mailto:bob@example.com');
+    $this->assertEqual(LINK_EMAIL, $valid, "Make sure a basic mailto is verified and identified");
+  }
+  
+  function testValidateEmailLinkBad() {
+    $valid = link_validate_url(':bob@example.com');
+    $this->assertEqual(FALSE, $valid, 'Make sure just a bad address is correctly failed');
+  }
+  
+  function testValidateNewsgroupLink() {
+    $valid = link_validate_url('news:comp.infosystems.www.misc');
+    $this->assertEqual(LINK_NEWS, $valid, 'Make sure link to newsgroup validates as news.');
+  }
+  
+  function testValidateNewsArticleLink() {
+    $valid = link_validate_url('news:hj0db8$vrm$1@news.eternal-september.org');
+    $this->assertEqual(LINK_NEWS, $valid, 'Make sure link to specific article valiates as news.');
+  }
+  
+  function testValidateBadNewsgroupLink() {
+    $valid = link_validate_url('news:comp.bad_name.misc');
+    $this->assertEqual(FALSE, $valid, 'newsgroup names can\'t contain underscores, so it should come back as invalid.');
+  }
+  
+  function testValidateInternalLink() {
+    $valid = link_validate_url('node/5');
+    $this->assertEqual(LINK_INTERNAL, $valid, 'Test normal internal link.');
+  }
+  
+  function testValidateExternalLinks() {
+    $links = array(
+      'http://localhost:8080/',
+      'www.example.com',
+      'www.example.com/',
+      'http://username:p%40ssw0rd!@www.example.com/',
+      'http://@www.example.com/',
+      'http://username:@www.example.com/',
+    );
+    // Test all of the protocols.
+    $allowed_protocols = variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'));
+    foreach ($allowed_protocols as $protocol) {
+      if ($protocol !== 'news' && $protocol !== 'mailto') {
+        $links[] = $protocol .'://www.example.com';
+      }
+    }
+    foreach ($links as $link) {
+      $valid = link_validate_url($link);
+      $this->assertEqual(LINK_EXTERNAL, $valid, 'Testing that '. $link .' is a valid external link.');
+    }
+  }
+  
+  function testInvalidExternalLinks() {
+    $links = array(
+      'http://www.ex ample.com/',
+      '//www.example.com/',
+    );
+    foreach ($links as $link) {
+      $valid = link_validate_url($link);
+      $this->assertEqual(FALSE, $valid, 'Testing that '. $link .' is not a valid link.');
+    }
   }
   
 }
