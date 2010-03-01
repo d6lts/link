@@ -293,6 +293,13 @@ class LinkValidateUrlLight extends DrupalUnitTestCase {
       'http://example.com/index.php?q=node/123',
       'http://example.com/index.php?page=this\that',
       'http://example.com/?first_name=Joe Bob&last_name=Smith',
+      // Anchors
+      'http://www.example.com/index.php#test',
+      'http://www.example.com/index.php#this@that.',
+      'http://www.example.com/index.php#',
+      'http://www.cnn.com/video/#/video/politics/2008/12/09/intv.madeleine.albright.cnn',
+      'http://www.archive.org/stream/aesopsfables00aesorich#page/n7/mode/2up',
+      'http://www.example.com/blah/#this@that?',
     );
     // Test all of the protocols.
     $allowed_protocols = variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'));
