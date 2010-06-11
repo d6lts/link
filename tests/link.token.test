@@ -4,8 +4,19 @@
 /**
  * Testing that tokens can be used in link titles
  */
-class LinkTokenTest extends DrupalWebTestcase {
+class LinkTokenTest extends ContentCrudTestCase {
 
+  public $permissions = array(
+      'access content',
+      'administer content types',
+      'administer nodes',
+      'administer filters',
+      'access comments',
+      'post comments',
+      'post comments without approval',
+      'access administration pages',
+  );
+  
   /**
    * Implementation of getInfo().
    */
@@ -182,5 +193,118 @@ class LinkTokenTest extends DrupalWebTestcase {
     $this->drupalGet($url);
 
     $this->assertRaw(l($name .' '. $name, $input['href']));
+  }
+  
+function test_Link_With_Title_Attribute_token_url_form() {
+    $this->loginWithPermissions($this->permissions);
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => '',
+        'target' => 'default',
+        'rel' => 'nofollow',
+        'title' => '',
+      ),
+    );
+    
+    $field = $this->createField($field_settings, 0);
+    //$this->fail('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_name = $field['field_name'];
+    $field_db_info = content_database_info($field);
+    $url_type = str_replace('_', '-', $this->content_types[0]->type);
+  
+    $edit = array('attributes[title]' => '['. $field_name .'-url]');
+
+    $this->drupalPost('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name'],
+                      $edit, t('Save field settings'));
+    $this->assertText(t('Saved field @field_name', array('@field_name' => $field['field_name'])));
+    
+    // So, having saved this field_name, let's see if it works...
+    $this->acquireNodes(1);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $test_link_url = 'http://www.example.com/test';
+    $edit[$field['field_name'] .'[0][url]'] = $test_link_url;
+    $title = 'title_'. $this->randomName(20);
+    $edit[$field['field_name'] .'[0][title]'] = $title;
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertText(t('@type @title has been updated.',
+                        array('@title' => $node->title,
+                              '@type' => $this->content_types[0]->name)));
+    
+    $this->drupalGet('node/'. $node->nid);
+    $this->assertText($title, 'Make sure the link title/text shows');
+    $this->assertRaw(' title="'. $test_link_url .'"', "Do we show the link url as the title attribute?");
+    $this->assertNoRaw(' title="['. $field_name .'-url]"');
+    $this->assertTrue(module_exists('token'), t('Assure that Token Module is enabled.'));
+    $this->pass($this->content);
+  }
+  
+  /**
+   * If the title of the link is set to the title attribute, then the title
+   * attribute isn't supposed to show.
+   */
+  function test_Link_With_Title_Attribute_token_title_form() {
+    $this->loginWithPermissions($this->permissions);
+    $this->acquireContentTypes(1);
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(
+        'class' => '',
+        'target' => 'default',
+        'rel' => 'nofollow',
+        'title' => '',
+      ),
+    );
+    
+    $field = $this->createField($field_settings, 0);
+    $field_name = $field['field_name'];
+    $field_db_info = content_database_info($field);
+    $url_type = str_replace('_', '-', $this->content_types[0]->type);
+  
+    $edit = array('attributes[title]' => '['. $field_name .'-title]');
+
+    $this->drupalPost('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name'],
+                      $edit, t('Save field settings'));
+    $this->assertText(t('Saved field @field_name', array('@field_name' => $field['field_name'])));
+    
+    // So, having saved this field_name, let's see if it works...
+    $this->acquireNodes(1);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'http://www.example.com/test';
+    $title = 'title_'. $this->randomName(20);
+    $edit[$field['field_name'] .'[0][title]'] = $title;
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertText(t('@type @title has been updated.',
+                        array('@title' => $node->title,
+                              '@type' => $this->content_types[0]->name)));
+    
+    $this->drupalGet('node/'. $node->nid);
+    $this->assertText($title, 'Make sure the link title/text shows');
+    $this->assertNoRaw(' title="'. $title .'"', "We should not show the link title as the title attribute?");
+    $this->assertNoRaw(' title="['. $field_name .'-title]"');
+    $this->pass($this->content);
   }
 }

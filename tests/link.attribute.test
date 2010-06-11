@@ -210,7 +210,7 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     $this->drupalGet('node/'. $this->nodes[0]->nid);
     //$this->outputScreenContents('Link field with class', 'link_');
     $this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com', array('attributes' => array('target' => '_blank', 'rel' => 'nofollow'))));
-    $this->pass($this->content);
+    //$this->pass($this->content);
     
     // Does this display on the front page?
     $this->drupalGet('<front>');
@@ -320,7 +320,7 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
                               array('attributes' => array('target' => '_blank',
                                                           'rel' => 'nofollow',
                                                           'class' => 'testdata'))));
-    $this->pass($this->content);
+    //$this->pass($this->content);
   }
   
   function test_Link_With_Title_Attribute() {
@@ -464,7 +464,7 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     $this->assertRaw('>'. $common_title .'<', 'Make sure the link title/text shows');
     $this->assertNoRaw(' title="'. $common_title .'"',
                        "Do we hide the title, since it matches the link title?");
-    $this->pass($this->content);
+    //$this->pass($this->content);
   }
   
   /**

@@ -422,11 +422,14 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']['rel']);
   }
 
-  // Handle "title" link attribute.
-  if (!empty($attributes['title']) && module_exists('token')) {
+  // Handle "title" link attribute
+  if (!empty($item['attributes']['title']) && module_exists('token')) {
     // Load the node (necessary for nodes in views).
     $token_node = isset($node->nid) ? node_load($node->nid) : $node;
-    $item['attributes']['title'] = token_replace($attributes['title'], 'node', $token_node);
+    $item['attributes']['title'] = token_replace($item['attributes']['title'], 'node', $token_node);
+  }
+  else {
+    drupal_set_message('Did not process title');
   }
   // Remove title attribute if it's equal to link text.
   if ($item['attributes']['title'] == $item['display_title']) {
