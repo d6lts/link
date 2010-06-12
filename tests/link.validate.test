@@ -45,9 +45,11 @@ class LinkValidateTestCase extends ContentCrudTestCase {
       'widget_type' => 'link',
       'type_name' => $this->content_types[0]->name,
       'attributes' => array(), // <-- This is needed or we have an error.
+      'validate_url' => 1,
     );
 
     $field = $this->createField($field_settings, 0);
+    //$this->fail('<pre>'. print_r($field, TRUE) .'</pre>');
 
     $field_db_info = content_database_info($field);
 
@@ -88,14 +90,18 @@ class LinkValidateTest extends LinkValidateTestCase {
     $this->link_test_validate_url('http://www.example.com');
   }
   
-  function test_link_validate_bad_url() {
+  /**
+   * Test if we're stopped from posting a bad url on default validation.
+   */
+  function test_link_validate_bad_url_validate_default() {
     $this->acquireContentTypes(1);
     variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
     $field_settings = array(
       'type' => 'link',
       'widget_type' => 'link',
       'type_name' => $this->content_types[0]->name,
-      'attributes' => array(), // <-- This is needed or we have an error.
+      'attributes' => array(), // <-- This is needed or we have an error
+      //'validate_url' => 1,
     );
 
     $field = $this->createField($field_settings, 0);
@@ -118,6 +124,144 @@ class LinkValidateTest extends LinkValidateTestCase {
     // Make sure we get a new version!
     $node = node_load($this->nodes[0]->nid, NULL, TRUE);
     $this->assertNotEqual('edik:naw', $node->{$field['field_name']}[0]['url']);
+    
+  }
+  
+  /**
+   * Test if we're stopped from posting a bad url with validation on.
+   */
+  function test_link_validate_bad_url_validate_on() {
+    $this->acquireContentTypes(1);
+    variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(), // <-- This is needed or we have an error
+      'validate_url' => 1,
+    );
+
+    $field = $this->createField($field_settings, 0);
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'edik:naw';
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    //$this->pass($this->content);
+    $this->assertText(t('Not a valid URL.'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertNotEqual('edik:naw', $node->{$field['field_name']}[0]['url']);
+    
+  }
+  
+  /**
+   * Test if we can post a bad url if the validation is expressly turned off.
+   */
+  function test_link_validate_bad_url_validate_off() {
+    $this->acquireContentTypes(1);
+    variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(), // <-- This is needed or we have an error
+      'validate_url' => 0,
+    );
+
+    $field = $this->createField($field_settings, 0);
+    //$this->pass('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $edit[$field['field_name'] .'[0][url]'] = 'edik:naw';
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    //$this->pass($this->content);
+    $this->assertNoText(t('Not a valid URL.'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertEqual('edik:naw', $node->{$field['field_name']}[0]['url']);
+    
+  }
+  
+  /**
+   * Test if a bad url can sneak through un-filtered if we play with the validation...
+   */
+  function test_link_validate_switching_between_validation_status() {
+    $this->acquireContentTypes(1);
+    $account = $this->drupalCreateUser(array('administer content types',
+                                             'administer nodes',
+                                             'access administration pages',
+                                             'access content',
+                                             'create '. $this->content_types[0]->type .' content',
+                                             'edit any '. $this->content_types[0]->type .' content'));
+    $this->drupalLogin($account);
+    variable_set('node_options_'. $this->content_types[0]->name, array('status', 'promote'));
+    $field_settings = array(
+      'type' => 'link',
+      'widget_type' => 'link',
+      'type_name' => $this->content_types[0]->name,
+      'attributes' => array(), // <-- This is needed or we have an error
+      'validate_url' => 0,
+    );
+
+    $field = $this->createField($field_settings, 0);
+    //$this->fail('<pre>'. print_r($field, TRUE) .'</pre>');
+    $field_db_info = content_database_info($field);
+
+    $this->acquireNodes(2);
+    
+    $node = node_load($this->nodes[0]->nid);
+    
+    $this->drupalGet('node/'. $this->nodes[0]->nid);
+    
+    $edit = array();
+    $title = $this->randomName();
+    $url = 'javascript:alert("http://example.com/' . $this->randomName() . '")';
+    $edit[$field['field_name'] .'[0][url]'] = $url;
+    $edit[$field['field_name'] .'[0][title]'] = $title;
+    
+    $this->drupalPost('node/'. $this->nodes[0]->nid .'/edit', $edit, t('Save'));
+    //$this->pass($this->content);
+    $this->assertNoText(t('Not a valid URL.'));
+    
+    // Make sure we get a new version!
+    $node = node_load($this->nodes[0]->nid, NULL, TRUE);
+    $this->assertEqual($url, $node->{$field['field_name']}[0]['url']);
+    
+    $this->drupalGet('node/'. $node->nid);
+    $this->assertNoRaw($url, 'Make sure Javascript does not display.');
+    
+    // Turn the array validation back _on_.
+    $edit = array('validate_url' => TRUE);
+    $node_type_link = str_replace('_', '-', $node->type);
+    //$this->drupalGet('admin/content/node-type/'. $node_type_link .'/fields'); ///'. $field['field_name']);
+    //$this->fail($this->content);
+    $this->drupalPost('admin/content/node-type/'. $node_type_link .'/fields/'. $field['field_name'], $edit, t('Save field settings'));
+    
+    $this->drupalGet('node/'. $node->nid);
+    // This actually works because the display_url goes through the core
+    // url() function.  But we should have a test that makes sure it continues
+    // to work.
+    $this->assertNoRaw($url, 'Make sure Javascript does not display.');
+    //$this->fail($this->content);
     
   }
   

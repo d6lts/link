@@ -59,6 +59,13 @@ function link_field_settings($op, $field) {
       $form = array(
         '#theme' => 'link_field_settings',
       );
+      
+      $form['validate_url'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Validate URL'),
+        '#default_value' => isset($field['validate_url']) ? $field['validate_url'] : true,
+        '#description' => t('If checked, the URL field will be verified as a valid URL during validation.'),
+      );
 
       $form['url'] = array(
         '#type' => 'checkbox',
@@ -169,7 +176,7 @@ function link_field_settings($op, $field) {
       break;
 
     case 'save':
-      return array('attributes', 'display', 'url', 'title', 'title_value', 'enable_tokens');
+      return array('attributes', 'display', 'url', 'title', 'title_value', 'enable_tokens', 'validate_url');
 
     case 'database columns':
       return array(
@@ -218,8 +225,10 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'validate':
       $optional_field_found = FALSE;
-      foreach ($items as $delta => $value) {
-        _link_validate($items[$delta], $delta, $field, $node, $optional_field_found);
+      if ($field['validate_url'] !== 0 || is_null($field['validate_url']) || !isset($field['validate_url'])) {
+        foreach ($items as $delta => $value) {
+          _link_validate($items[$delta], $delta, $field, $node, $optional_field_found);
+        }
       }
 
       if ($field['url'] == 'optional' && $field['title'] == 'optional' && $field['required'] && !$optional_field_found) {
@@ -345,6 +354,11 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   }
 
   $type = link_validate_url($item['url']);
+  // If we can't determine the type of url, and we've been told not to validate it,
+  // then we assume it's a LINK_EXTERNAL type for later processing. #357604
+  if ($type == FALSE && $field['validate_url'] === 0) {
+    $type = LINK_EXTERNAL;
+  }
   $url = link_cleanup_url($item['url']);
 
   // Separate out the anchor if any.
@@ -358,7 +372,12 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $url = substr($url, 0, strpos($url, '?'));
   }
   // Save the new URL without the anchor or query.
-  $item['url'] = $url;
+  if ($field['validate_url'] === 0) {
+    $item['url'] = check_plain($url);
+  }
+  else {
+    $item['url'] = $url;
+  }
 
   // Create a shortened URL for display.
   $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, array('query' => isset($item['query']) ? $item['query'] : NULL, 'fragment' => isset($item['fragment']) ? $item['fragment'] : NULL, 'absolute' => TRUE));
@@ -428,9 +447,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $token_node = isset($node->nid) ? node_load($node->nid) : $node;
     $item['attributes']['title'] = token_replace($item['attributes']['title'], 'node', $token_node);
   }
-  else {
-    drupal_set_message('Did not process title');
-  }
+
   // Remove title attribute if it's equal to link text.
   if ($item['attributes']['title'] == $item['display_title']) {
     unset($item['attributes']['title']);
