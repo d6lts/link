@@ -13,7 +13,8 @@ define('LINK_EMAIL', 'email');
 define('LINK_NEWS', 'news');
 define('LINK_DOMAINS', 'aero|arpa|asia|biz|com|cat|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|local');
 // There are many other characters which are legal other than simply a-z - this includes them.
-define('LINK_ICHARS', (string) html_entity_decode(implode("", array(
+// html_entity_decode() is buggy in php 4 - we'll put it back here for D7 when 5.x is assumed.
+/*define('LINK_ICHARS', (string) html_entity_decode(implode("", array(
     "&#x00E6;", // æ
     "&#x00C6;", // Æ
     "&#x00F8;", // ø
@@ -26,7 +27,7 @@ define('LINK_ICHARS', (string) html_entity_decode(implode("", array(
     "&#x00D6;", // Ö
     "&#x00FC;", // ü
     "&#x00DC;", // Ü
-  )), ENT_QUOTES, 'UTF-8'));
+  )), ENT_QUOTES, 'UTF-8'));*/
 
 define('LINK_TARGET_DEFAULT', 'default');
 define('LINK_TARGET_NEW_WINDOW', '_blank');
@@ -749,6 +750,56 @@ function link_cleanup_url($url, $protocol = "http") {
 }
 
 /**
+ * Wrapper around html_entity_decode to handle problems with PHP 4.
+ *
+ * See http://drupal.org/node/739650
+ * See http://bugs.php.net/bug.php?id=25670
+ *
+ * We've taken this away from the beginning of file define() step, as this is
+ * going to be slower for PHP4, and we don't want to run this on every page load,
+ * just when we're doing a validate.
+ */
+function _link_html_entity_decode($html_string, $quote_style = ENT_COMPAT, $charset) {
+  if (defined('PHP_VERSION')) {
+    $version = explode('.', PHP_VERSION);
+    if ($version[0] == '5') {
+      return html_entity_decode($html_string, $quote_style, $charset); // PHP 5, use default.
+    }
+  }
+  else {
+    $version = explode('.', PHP_VERSION);
+    if ($version[0] == '5') {
+      return html_entity_decode($html_string, $quote_style, $charset);
+    }
+  }
+  // use suggested code from http://drupal.org/node/739650
+  // replace numeric entities
+  $string = preg_replace('~&#x([0-9a-f]+);~ei', "_link_code2utf(hexdec('\\1'))", $html_string);
+  $string = preg_replace('~&#([0-9]+);~e', '_link_code2utf("\\1")', $string);
+
+  // replace literal entities.
+  $trans_tbl = get_html_translation_table(HTML_ENTITIES);
+  $trans_tbl = array_flip($trans_tbl);
+
+  return strtr($string, $trans_tbl);
+}
+
+/**
+ * Returns the utf string corresponding to the unicode value.
+ *
+ * Needed for handling utf characters in PHP4.
+ *
+ * @see http://www.php.net/manual/en/function.html-entity-decode.php#75153
+ */
+function _link_code2utf($num) {
+  if ($num < 128) return chr($num);
+  if ($num < 2048) return chr(($num >> 6) + 192) . chr(($num & 63) + 128);
+  if ($num < 65536) return chr(($num >> 12) + 224) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+  if ($num < 2097152) return chr(($num >> 18) + 240) . chr((($num >> 12) & 63) + 128) . chr((($num >> 6) & 63) + 128) . chr(($num & 63) + 128);
+  return '';
+}
+
+/**
  * A lenient verification for URLs. Accepts all URLs following RFC 1738 standard
  * for URL formation and all email addresses following the RFC 2368 standard for
  * mailto address formation.
@@ -758,11 +809,25 @@ function link_cleanup_url($url, $protocol = "http") {
  * the following attributes: protocol, hostname, ip, and port.
  */
 function link_validate_url($text) {
+  $LINK_ICHARS = (string) _link_html_entity_decode(implode("", array(
+    "&#x00E6;", // æ
+    "&#x00C6;", // Æ
+    "&#x00F8;", // ø
+    "&#x00D8;", // Ø
+    "&#x00E5;", // å
+    "&#x00C5;", // Å
+    "&#x00E4;", // ä
+    "&#x00C4;", // Ä
+    "&#x00F6;", // ö
+    "&#x00D6;", // Ö
+    "&#x00FC;", // ü
+    "&#x00DC;", // Ü
+  )), ENT_QUOTES, 'UTF-8');
   $allowed_protocols = variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'));
 
   $protocol = '(('. implode("|", $allowed_protocols) .'):\/\/)';
-  $authentication = '(([a-z0-9%' . LINK_ICHARS . ']+(:[a-z0-9%'. LINK_ICHARS . '!]*)?)?@)';
-  $domain = '(([a-z0-9' . LINK_ICHARS . ']([a-z0-9'. LINK_ICHARS . '\-_\[\]])*)(\.(([a-z0-9' . LINK_ICHARS . '\-_\[\]])+\.)*('. LINK_DOMAINS .'|[a-z]{2}))?)';
+  $authentication = '(([a-z0-9%' . $LINK_ICHARS . ']+(:[a-z0-9%'. $LINK_ICHARS . '!]*)?)?@)';
+  $domain = '(([a-z0-9' . $LINK_ICHARS . ']([a-z0-9'. $LINK_ICHARS . '\-_\[\]])*)(\.(([a-z0-9' . $LINK_ICHARS . '\-_\[\]])+\.)*('. LINK_DOMAINS .'|[a-z]{2}))?)';
   $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})';
   $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})';
   $port = '(:([0-9]{1,5}))';
@@ -771,12 +836,12 @@ function link_validate_url($text) {
   $external_pattern = '/^'. $protocol .'?'. $authentication .'?('. $domain .'|'. $ipv4 .'|'. $ipv6 .' |localhost)'. $port .'?';
 
   // Pattern specific to internal links.
-  $internal_pattern = "/^([a-z0-9". LINK_ICHARS ."_\-+\[\]]+)";
+  $internal_pattern = "/^([a-z0-9". $LINK_ICHARS ."_\-+\[\]]+)";
 
-  $directories = "(\/[a-z0-9". LINK_ICHARS ."_\-\.~+%=&,$'!():;*@\[\]]*)*";
+  $directories = "(\/[a-z0-9". $LINK_ICHARS ."_\-\.~+%=&,$'!():;*@\[\]]*)*";
   // Yes, four backslashes == a single backslash.
-  $query = "(\/?\?([?a-z0-9". LINK_ICHARS ."+_|\-\.\/\\\\%=&,$'():;*@\[\]{} ]*))";
-  $anchor = "(#[a-z0-9". LINK_ICHARS ."_\-\.~+%=&,$'():;*@\[\]\/\?]*)";
+  $query = "(\/?\?([?a-z0-9". $LINK_ICHARS ."+_|\-\.\/\\\\%=&,$'():;*@\[\]{} ]*))";
+  $anchor = "(#[a-z0-9". $LINK_ICHARS ."_\-\.~+%=&,$'():;*@\[\]\/\?]*)";
 
   // The rest of the path for a standard URL.
   $end = $directories .'?'. $query .'?'. $anchor .'?'.'$/i';
@@ -785,7 +850,7 @@ function link_validate_url($text) {
   $newsgroup_name = '([0-9a-z+-]*\.)*[0-9a-z+-]*';
   $news_pattern = '/^news:('. $newsgroup_name .'|'. $message_id .')$/i';
 
-  $user = '[a-zA-Z0-9'. LINK_ICHARS .'_\-\.\+\^!#\$%&*+\/\=\?\`\|\{\}~\'\[\]]+';
+  $user = '[a-zA-Z0-9'. $LINK_ICHARS .'_\-\.\+\^!#\$%&*+\/\=\?\`\|\{\}~\'\[\]]+';
   $email_pattern = '/^mailto:'. $user .'@'.'('. $domain .'|'. $ipv4 .'|'. $ipv6 .'|localhost)'. $query .'?$/';
 
   if (strpos($text, '<front>') === 0) {

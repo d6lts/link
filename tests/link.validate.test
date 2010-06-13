@@ -69,7 +69,8 @@ class LinkValidateTestCase extends ContentCrudTestCase {
     $node = node_load($this->nodes[0]->nid, NULL, TRUE);
     $this->assertText(t('@type @title has been updated.',
                         array('@title' => $node->title,
-                              '@type' => $this->content_types[0]->name)));
+                              '@type' => $this->content_types[0]->name)),
+                      t('Testing %url', array('%url' => $url)));
     
     
     $this->assertEqual($url, $node->{$field['field_name']}[0]['url']);
