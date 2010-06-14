@@ -1,5 +1,10 @@
 <?php
-//$Id$
+// $Id$
+
+/**
+ * @file
+ * Testing CRUD API in the browser.
+ */
 
 /**
  * Testing that users can not input bad URLs or labels
