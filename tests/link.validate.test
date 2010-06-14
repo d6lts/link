@@ -330,7 +330,7 @@ class LinkValidateSpecificURL extends LinkValidateTestCase {
   }
   
   function test_german_b_url() {
-    $this->link_test_validate_url('http://www.testß.com/');
+    $this->link_test_validate_url('http://www.test.com/ßstuff');
   }
   
   function test_special_n_url() {
@@ -484,6 +484,7 @@ class LinkValidateUrlLight extends DrupalUnitTestCase {
       '//www.example.com/',
       'http://25.0.0/', // bad ip!
       'http://4827.0.0.2/',
+      'http://www.testß.com/', // ß not allowed in domain names!
       //'http://www.-fudge.com/', // domains can't have sections starting with a dash.
     );
     foreach ($links as $link) {
