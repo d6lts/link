@@ -60,11 +60,11 @@ function link_field_settings($op, $field) {
       $form = array(
         '#theme' => 'link_field_settings',
       );
-      
+
       $form['validate_url'] = array(
         '#type' => 'checkbox',
         '#title' => t('Validate URL'),
-        '#default_value' => isset($field['validate_url']) ? $field['validate_url'] : true,
+        '#default_value' => isset($field['validate_url']) && ($field['validate_url'] !== '') ? $field['validate_url'] : true,
         '#description' => t('If checked, the URL field will be verified as a valid URL during validation.'),
       );
 
@@ -86,7 +86,7 @@ function link_field_settings($op, $field) {
       $form['title'] = array(
         '#type' => 'radios',
         '#title' => t('Link Title'),
-        '#default_value' => isset($field['title']) ? $field['title'] : 'optional',
+        '#default_value' => isset($field['title']) && ($field['title'] !== '') ? $field['title'] : 'optional',
         '#options' => $title_options,
         '#description' => t('If the link title is optional or required, a field will be displayed to the end user. If the link title is static, the link will always use the same title. If <a href="http://drupal.org/project/token">token module</a> is installed, the static title value may use any other node field as its value. Static and token-based titles may include most inline XHTML tags such as <em>strong</em>, <em>em</em>, <em>img</em>, <em>span</em>, etc.'),
       );

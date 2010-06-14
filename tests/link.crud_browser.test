@@ -296,4 +296,41 @@ class LinkUITest extends DrupalWebTestcase {
 
     $this->assertRaw(l('<strong>'. $name .'</strong>', $input['href'], array('html' => TRUE)));
   }
+  
+  /**
+   * If we're creating a new field and just hit 'save' on the default options, we want to make
+   * sure they are set to the expected results.
+   */
+  function testCRUDCreateFieldDefaults() {
+    $account = $this->drupalCreateUser(array('administer content types', 'access content', 'create page content'));
+    $this->drupalLogin($account);
+
+    // create field
+    $name = strtolower($this->randomName());
+    $edit = array(
+      '_add_new_field[label]' => $name,
+      '_add_new_field[field_name]' => $name,
+      '_add_new_field[type]' => 'link',
+      '_add_new_field[widget_type]' => 'link',
+    );
+    $this->drupalPost('admin/content/node-type/page/fields', $edit, t('Save'));
+    $this->drupalPost(NULL, array(), t('Save field settings'));
+
+    // Is field created?
+    $this->assertRaw(t('Added field %label.', array('%label' => $name)), 'Field added');
+    _content_type_info(TRUE);
+    $fields = content_fields();
+    $field = $fields['field_'. $name];
+    $this->assertTrue(1 === $field['validate_url'], 'Make sure validation is on.');
+    $this->assertFalse($field['required'], 'Make sure field is not required.');
+    $this->assertEqual($field['title'], 'optional', 'Title should be optional by default.');
+    $this->assertFalse($field['enable_tokens'], 'Enable Tokens should be off by default.');
+    $this->assertEqual($field['display']['url_cutoff'], 80, 'Url cutoff should be at 80 characters.');
+    $this->assertEqual($field['attributes']['target'], 'default', 'Target should be "default"');
+    $this->assertFalse($field['attributes']['rel'], 'Rel should be blank by default.');
+    $this->assertFalse($field['attributes']['class'], 'By default, no class should be set.');
+    $this->assertFalse($field['attributes']['title'], 'By default, no title should be set.');
+    
+    //$this->fail('<pre>'. print_r($fields['field_'. $name], TRUE) .'</pre>');
+  }
 }
