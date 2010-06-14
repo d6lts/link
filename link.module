@@ -859,6 +859,7 @@ function link_validate_url($text) {
 
   // Pattern specific to internal links.
   $internal_pattern = "/^([a-z0-9". $LINK_ICHARS ."_\-+\[\]]+)";
+  $internal_pattern_file = "/^([a-z0-9". $LINK_ICHARS ."_\-+\[\]\.]+)$/i";
 
   $directories = "(\/[a-z0-9". $LINK_ICHARS ."_\-\.~+%=&,$'!():;*@\[\]]*)*";
   // Yes, four backslashes == a single backslash.
@@ -889,6 +890,9 @@ function link_validate_url($text) {
   }
   if (preg_match($external_pattern . $end, $text)) {
     return LINK_EXTERNAL;
+  }
+  if (preg_match($internal_pattern_file, $text)) {
+    return LINK_INTERNAL;
   }
 
   return FALSE;
