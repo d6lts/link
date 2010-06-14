@@ -106,4 +106,29 @@ class link_views_handler_filter_protocol extends views_handler_filter_string {
 
     $this->query->add_where($this->options['group'], implode(' '. $this->operator .' ', $where_conditions));
   }
+  
+  /**
+   * Because more than one can be selected, we need to handle the value better.
+   */
+  function admin_summary() {
+    if (!empty($this->options['exposed'])) {
+      return t('exposed');
+    }
+
+    $options = $this->operator_options('short');
+    $output = check_plain($options[$this->operator]);
+    if (in_array($this->operator, $this->operator_values(1))) {
+      $count = 0;
+      foreach ($this->value as $value) {
+        if (!$count) {
+          $output .= ' ' . check_plain($value);
+        }
+        else {
+          $output .= ', ' . check_plain($value);
+        }
+        $count++;
+      }
+    }
+    return $output;
+  }
 }
