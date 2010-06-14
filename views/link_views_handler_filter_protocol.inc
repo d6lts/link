@@ -10,14 +10,16 @@
  * Filter handler for limiting a view to URLs of a certain protocol.
  */
 class link_views_handler_filter_protocol extends views_handler_filter_string {
+  
   /**
    * Set defaults for the filter options.
    */
-  function options(&$options) {
-    parent::options($options);
-    $options['operator'] = 'OR';
-    $options['value'] = 'http';
-    $options['case'] = 0;
+  function option_definition() {
+    $options = parent::option_definition();
+    $options['operator'] = array('default' => 'OR');
+    $options['value'] = array('default' => 'http');
+    $options['case'] = array('default' => 0);
+    return $options;
   }
 
   /**
