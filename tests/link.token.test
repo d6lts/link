@@ -108,7 +108,9 @@ class LinkTokenTest extends ContentCrudTestCase {
     $this->drupalPost('admin/content/node-type/page/fields', $edit, t('Save'));
     $this->drupalPost(NULL, array(
       'title' => 'value',
-      'title_value' => $name . ' [type]'), t('Save field settings'));
+      'title_value' => $name . ' [type]',
+      'enable_tokens' => TRUE,
+      ), t('Save field settings'));
 
     // Is filed created?
     $this->assertRaw(t('Added field %label.', array('%label' => $name)), 'Field added');
@@ -163,7 +165,9 @@ class LinkTokenTest extends ContentCrudTestCase {
     $this->drupalPost('admin/content/node-type/page/fields', $edit, t('Save'));
     $this->drupalPost(NULL, array(
       'title' => 'value',
-      'title_value' => $name . ' [title-raw]'), t('Save field settings'));
+      'title_value' => $name . ' [title-raw]',
+      'enable_tokens' => TRUE,
+      ), t('Save field settings'));
 
     // Is field created?
     $this->assertRaw(t('Added field %label.', array('%label' => $name)), 'Field added');
@@ -216,7 +220,8 @@ class LinkTokenTest extends ContentCrudTestCase {
     $field_db_info = content_database_info($field);
     $url_type = str_replace('_', '-', $this->content_types[0]->type);
   
-    $edit = array('attributes[title]' => '['. $field_name .'-url]');
+    $edit = array('attributes[title]' => '['. $field_name .'-url]',
+                  'enable_tokens' => TRUE);
 
     $this->drupalPost('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name'],
                       $edit, t('Save field settings'));
@@ -248,7 +253,7 @@ class LinkTokenTest extends ContentCrudTestCase {
     $this->assertRaw(' title="'. $test_link_url .'"', "Do we show the link url as the title attribute?");
     $this->assertNoRaw(' title="['. $field_name .'-url]"');
     $this->assertTrue(module_exists('token'), t('Assure that Token Module is enabled.'));
-    $this->pass($this->content);
+    //$this->fail($this->content);
   }
   
   /**
@@ -275,7 +280,8 @@ class LinkTokenTest extends ContentCrudTestCase {
     $field_db_info = content_database_info($field);
     $url_type = str_replace('_', '-', $this->content_types[0]->type);
   
-    $edit = array('attributes[title]' => '['. $field_name .'-title]');
+    $edit = array('attributes[title]' => '['. $field_name .'-title]',
+                  'enable_tokens' => TRUE);
 
     $this->drupalPost('admin/content/node-type/'. $url_type .'/fields/'. $field['field_name'],
                       $edit, t('Save field settings'));
@@ -305,7 +311,7 @@ class LinkTokenTest extends ContentCrudTestCase {
     $this->assertText($title, 'Make sure the link title/text shows');
     $this->assertNoRaw(' title="'. $title .'"', "We should not show the link title as the title attribute?");
     $this->assertNoRaw(' title="['. $field_name .'-title]"');
-    $this->pass($this->content);
+    //$this->fail($this->content);
   }
 
   /**
