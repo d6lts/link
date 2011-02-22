@@ -167,9 +167,9 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   if ($type != LINK_EXTERNAL && $type != LINK_NEWS && strpos($item['attributes']['rel'], 'nofollow') !== FALSE) {
     $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']['rel']);
   }
-  // Some old field data may have $element['#item']['attributes']['rel'] as an array, which will cause errors:
-  if (is_array($element['#item']['attributes']['rel'])) {
-    unset($element['#item']['attributes']['rel']);
+  // Some old field data may have $item['#item']['attributes']['rel'] as an array, which will cause errors:
+  if (is_array($item['#item']['attributes']['rel'])) {
+    unset($item['#item']['attributes']['rel']);
   }
 
   // Handle "title" link attribute
