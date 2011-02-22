@@ -69,7 +69,7 @@ function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {
  */
 function _link_sanitize(&$item, $delta, &$field, &$node) {
   // Don't try to process empty links.
-  if (empty($item['url']) && empty($item['title'])) {
+  if (empty($item['url']) && empty($item['title']) && empty($field['title_value'])) {
     return;
   }
 
