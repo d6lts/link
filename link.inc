@@ -74,7 +74,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   }
 
   // Replace URL tokens.
-  if (module_exists('token') && $field['enable_tokens']) {
+  if ($field['enable_tokens'] && module_exists('token')) {
     // Load the node if necessary for nodes in views.
     $token_node = isset($node->nid) ? node_load($node->nid) : $node;
     $item['url'] = token_replace($item['url'], 'node', $token_node);
@@ -122,7 +122,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $title = $item['title'];
   }
   // Replace tokens. - originally we only did it for value titles.
-  if ($field['enable_tokens'] && module_exists('token')) {
+  if (($field['title'] == 'value' || $field['enable_tokens']) && module_exists('token')) {
     // Load the node if necessary for nodes in views.
     $token_node = isset($node->nid) ? node_load($node->nid) : $node;
     $title = filter_xss(token_replace($title, 'node', $token_node), array('b', 'br', 'code', 'em', 'i', 'img', 'span', 'strong', 'sub', 'sup', 'tt', 'u'));
@@ -173,7 +173,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   }
 
   // Handle "title" link attribute
-  if ($field['enable_tokens'] && !empty($item['attributes']['title']) && module_exists('token')) {
+  if (!empty($item['attributes']['title']) && module_exists('token')) {
     // Load the node (necessary for nodes in views).
     $token_node = isset($node->nid) ? node_load($node->nid) : $node;
     $item['attributes']['title'] = token_replace($item['attributes']['title'], 'node', $token_node);
