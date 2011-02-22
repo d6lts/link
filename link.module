@@ -421,6 +421,7 @@ function link_token_list($type = 'all') {
     $tokens['link']['url'] = t("Link URL");
     $tokens['link']['title'] = t("Link title");
     $tokens['link']['view'] = t("Formatted html link");
+    $tokens['link']['host'] = t("Link host");
 
     return $tokens;
   }
@@ -433,6 +434,8 @@ function link_token_values($type, $object = NULL) {
     $tokens['url'] = $item['url'];
     $tokens['title'] = $item['title'];
     $tokens['view'] = isset($item['view']) ? $item['view'] : '';
+    $host = @parse_url($item['url']);
+    $tokens['host'] = isset($host['host']) ? $host['host'] : '';
 
     return $tokens;
   }
