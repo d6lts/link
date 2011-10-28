@@ -449,3 +449,10 @@ function link_views_api() {
     'path' => drupal_get_path('module', 'link') .'/views',
   );
 }
+/**
+ * Implements hook_migrate_api().
+ */
+function link_migrate_api() {
+  return array('api' => 2);
+}
+
