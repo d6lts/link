@@ -45,7 +45,7 @@ function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {
     }
   }
   // Require a link if we have a title.
-  if ($field['url'] !== 'optional' && strlen($item['title']) > 0 && strlen(trim($item['url'])) == 0) {
+  if ($field['url'] !== 'optional' && isset($item['title']) && strlen($item['title']) > 0 && strlen(trim($item['url'])) == 0) {
     form_set_error($field['field_name'] .']['. $delta .'][url', t('You cannot enter a title without a link url.'));
   }
   // In a totally bizzaro case, where URLs and titles are optional but the field is required, ensure there is at least one link.
@@ -107,7 +107,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
 
   // Create a shortened URL for display.
   $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, array('query' => isset($item['query']) ? $item['query'] : NULL, 'fragment' => isset($item['fragment']) ? $item['fragment'] : NULL, 'absolute' => TRUE));
-  if ($field['display']['url_cutoff'] && strlen($display_url) > $field['display']['url_cutoff']) {
+  if (is_array($field['display']) && isset($field['display']['url_cutoff']) && strlen($display_url) > $field['display']['url_cutoff']) {
     $display_url = substr($display_url, 0, $field['display']['url_cutoff']) ."...";
   }
   $item['display_url'] = $display_url;
@@ -167,7 +167,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $item['attributes']['rel'] = str_replace('nofollow', '', $item['attributes']['rel']);
   }
   // Some old field data may have $item['#item']['attributes']['rel'] as an array, which will cause errors:
-  if (is_array($item['#item']['attributes']['rel'])) {
+  if (isset($item['#item']['attributes']['rel']) && is_array($item['#item']['attributes']['rel'])) {
     unset($item['#item']['attributes']['rel']);
   }
 

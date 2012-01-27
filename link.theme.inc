@@ -71,6 +71,14 @@ function theme_link_formatter_plain($element) {
 }
 
 /**
+ * Theme function for 'absolute' link field formatter.
+ */
+function theme_link_formatter_absolute($element) {
+  $absolute = array('absolute' => TRUE);
+  return empty($element['#item']['url']) ? '' : url($element['#item']['url'], $absolute + $element['#item']);
+}
+
+/**
  * Theme function for 'title_plain' text field formatter.
  */
 function theme_link_formatter_title_plain($element) {

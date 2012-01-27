@@ -283,6 +283,10 @@ function link_theme() {
       'arguments' => array('element' => NULL),
       'file' => 'link.theme.inc',
     ),
+    'link_formatter_absolute' => array(
+      'arguments' => array('element' => NULL),
+      'file' => 'link.theme.inc',
+    ),
     'link_formatter_title_plain' => array(
       'arguments' => array('element' => NULL),
       'file' => 'link.theme.inc',
@@ -392,6 +396,11 @@ function link_field_formatter_info() {
     ),
     'plain' => array(
       'label' => t('URL, as plain text'),
+      'field types' => array('link'),
+      'multiple values' => CONTENT_HANDLE_CORE,
+    ),
+    'absolute' => array(
+      'label' => t('URL, as absolute URL'),
       'field types' => array('link'),
       'multiple values' => CONTENT_HANDLE_CORE,
     ),

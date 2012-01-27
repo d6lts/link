@@ -361,6 +361,7 @@ class LinkValidateUrlLight extends DrupalUnitTestCase {
   
   function setUp() {
     // do we need to include something here?
+    module_load_include('module', 'link');
     module_load_include('inc', 'link');
   }
   
