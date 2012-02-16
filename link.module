@@ -224,6 +224,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
       break;
 
     case 'presave':
+      case 'update':
       foreach ($items as $delta => $value) {
         _link_process($items[$delta], $delta, $field, $node);
       }
@@ -464,4 +465,3 @@ function link_views_api() {
 function link_migrate_api() {
   return array('api' => 2);
 }
-
