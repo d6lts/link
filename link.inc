@@ -45,7 +45,7 @@ function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {
     }
   }
   // Require a link if we have a title.
-  if ($field['url'] !== 'optional' && isset($item['title']) && strlen($item['title']) > 0 && strlen(trim($item['url'])) == 0) {
+  if ($field['form_id'] != 'content_field_edit_form' && $field['url'] !== 'optional' && strlen($item['title']) > 0 && strlen(trim($item['url'])) == 0) {
     form_set_error($field['field_name'] .']['. $delta .'][url', t('You cannot enter a title without a link url.'));
   }
   // In a totally bizzaro case, where URLs and titles are optional but the field is required, ensure there is at least one link.
