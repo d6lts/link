@@ -218,7 +218,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
         }
       }
 
-      if ($field['url'] == 'optional' && $field['title'] == 'optional' && $field['required'] && !$optional_field_found) {
+      if ($field['url'] === 'optional' && $field['title'] === 'optional' && $field['required'] && !$optional_field_found) {
         form_set_error($field['field_name'] .'][0][title', t('At least one title or URL must be entered.'));
       }
       break;
