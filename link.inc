@@ -149,6 +149,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   $field['attributes'] += _link_default_attributes();
 
   // Merge item attributes with attributes defined at the field level.
+  $item['attributes'] = array_filter($item['attributes']);
   $item['attributes'] += $field['attributes'];
 
   // If user is not allowed to choose target attribute, use default defined at
