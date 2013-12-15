@@ -161,15 +161,22 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   $item['attributes'] = array_filter($item['attributes']);
   $item['attributes'] += $field['attributes'];
 
-  // If user is not allowed to choose target attribute, use default defined at
-  // field level.
-  if ($field['attributes']['target'] != LINK_TARGET_USER) {
-    $item['attributes']['target'] = $field['attributes']['target'];
-  }
-
-  // Remove the target attribute if the default (no target) is selected.
-  if (empty($item['attributes']) || $item['attributes']['target'] == LINK_TARGET_DEFAULT) {
+  if (empty($item['attributes'])) {
     unset($item['attributes']['target']);
+  }
+  switch ($field['attributes']['target']) {
+    case LINK_TARGET_DEFAULT:
+      unset($item['attributes']['target']);
+      break;
+    case LINK_TARGET_USER:
+      // '_blank' is the only authorized value for target in this version.
+      if ($item['attributes']['target'] != '_blank') {
+        unset($item['attributes']['target']);
+      }
+      break;
+    default: // LINK_TARGET_NEW_WINDOW and LINK_TARGET_TOP
+      $item['attributes']['target'] = $field['attributes']['target'];
+      break;
   }
 
   // Remove the rel=nofollow for internal links.
