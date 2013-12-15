@@ -28,7 +28,7 @@ function _link_process(&$item, $delta = 0, $field, $node) {
   // Don't save an invalid default value (e.g. 'http://').
   if ((isset($field['widget']['default_value'][$delta]['url']) && $item['url'] == $field['widget']['default_value'][$delta]['url']) && is_object($node)) {
     if (!link_validate_url($item['url'])) {
-      unset($item['url']);
+      $item['url'] = NULL;
     }
   }
   
