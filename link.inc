@@ -31,6 +31,11 @@ function _link_process(&$item, $delta = 0, $field, $node) {
       unset($item['url']);
     }
   }
+  
+  // If we don't have a title, then set it to null.
+  if (!isset($item['title'])) {
+    $item['title'] = NULL;
+  }
 }
 
 function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {

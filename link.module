@@ -231,7 +231,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
       break;
 
     case 'presave':
-      case 'update':
+    case 'update':
       foreach ($items as $delta => $value) {
         _link_process($items[$delta], $delta, $field, $node);
       }
