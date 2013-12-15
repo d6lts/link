@@ -57,6 +57,11 @@ function theme_link_formatter_default($element) {
   if (!empty($element['#item']['display_title']) && !empty($element['#item']['url'])) {
     return l($element['#item']['display_title'], $element['#item']['url'], $element['#item']);
   }
+
+  // If no title, no url, display nothing.
+  elseif (empty($element['#item']['title']) && empty($element['#item']['url'])) {
+    return ;
+  }
   // If only a title, display the title.
   elseif (!empty($element['#item']['display_title'])) {
     return check_plain($element['#item']['display_title']);

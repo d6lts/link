@@ -752,13 +752,13 @@ class LinkAttributeCrudTest extends ContentCrudTestCase {
     // Does this display on the node page?
     $this->drupalGet('node/'. $this->nodes[0]->nid);
     //$this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com'));
-    $this->assertRaw($title_value, 'Title value should be displayed for a blank field if the title is static.');
+    $this->assertNoRaw($title_value, 'Title value should not be displayed for a blank field if the title is static.');
     
     // Does this display on the front page?
     $this->drupalGet('<front>');
     // reset the zebra!
     $this->zebra = 0;
     //$this->assertLinkOnNode($field['field_name'], l('Test Link', 'http://www.example.com'));
-    $this->assertRaw($title_value, 'Title value should be displayed for a blank field if the title is static.');
+    $this->assertNoRaw($title_value, 'Title value should not be displayed for a blank field if the title is static.');
   }
 }
