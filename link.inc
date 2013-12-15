@@ -34,22 +34,26 @@ function _link_process(&$item, $delta = 0, $field, $node) {
 }
 
 function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {
-  if ($item['url'] && !(isset($field['widget']['default_value'][$delta]['url']) && $item['url'] == $field['widget']['default_value'][$delta]['url'] && !$field['required'])) {
+
+  // neither of these keys are certain to be set
+  $test = $item + array('url' => NULL, 'title' => NULL);
+
+  if ($test['url'] && !(isset($field['widget']['default_value'][$delta]['url']) && $test['url'] == $field['widget']['default_value'][$delta]['url'] && !$field['required'])) {
     // Validate the link.
-    if (link_validate_url(trim($item['url'])) == FALSE) {
+    if (link_validate_url(trim($test['url'])) == FALSE) {
       form_set_error($field['field_name'] .']['. $delta .'][url', t('Not a valid URL.'));
     }
     // Require a title for the link if necessary.
-    if ($field['title'] == 'required' && strlen(trim($item['title'])) == 0) {
+    if ($field['title'] == 'required' && strlen(trim($test['title'])) == 0) {
       form_set_error($field['field_name'] .']['. $delta .'][title', t('Titles are required for all links.'));
     }
   }
   // Require a link if we have a title.
-  if ($field['form_id'] != 'content_field_edit_form' && $field['url'] !== 'optional' && strlen($item['title']) > 0 && strlen(trim($item['url'])) == 0) {
+  if ((!isset($field['form_id']) || $field['form_id'] != 'content_field_edit_form') && $field['url'] !== 'optional' && strlen($test['title']) > 0 && strlen(trim($test['url'])) == 0) {
     form_set_error($field['field_name'] .']['. $delta .'][url', t('You cannot enter a title without a link url.'));
   }
   // In a totally bizzaro case, where URLs and titles are optional but the field is required, ensure there is at least one link.
-  if ($field['url'] == 'optional' && $field['title'] == 'optional' && (strlen(trim($item['url'])) != 0 || strlen(trim($item['title'])) != 0)) {
+  if ($field['url'] == 'optional' && $field['title'] == 'optional' && (strlen(trim($test['url'])) != 0 || strlen(trim($test['title'])) != 0)) {
     $optional_field_found = TRUE;
   }
 }
