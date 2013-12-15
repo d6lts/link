@@ -472,3 +472,30 @@ function link_views_api() {
 function link_migrate_api() {
   return array('api' => 2);
 }
+
+/**
+ * Implements hook_content_generate().
+ */
+function link_content_generate($node, $field) {
+  if (content_handle('widget', 'multiple values', $field) == CONTENT_HANDLE_MODULE) {
+    return content_devel_multiple('_link_content_generate', $node, $field);
+  }
+  else {
+    return _link_content_generate($node, $field);
+  }
+}
+
+/**
+ * Generates random link data for devel generate.
+ */
+function _link_content_generate($node, $field) {
+  // Have to use title = true to get only one word, but then want to force it to lowercase.
+  $url = url('http://www.example.com/' . drupal_strtolower(devel_create_greeking(1, TRUE)));
+  $title = devel_create_greeking(mt_rand(1, 3), TRUE);
+
+  return array(
+    'url' => $url,
+    'title' => $title,
+    'attributes' => array(),
+  );
+}
