@@ -116,7 +116,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
 
   // Create a shortened URL for display.
   $display_url = $type == LINK_EMAIL ? str_replace('mailto:', '', $url) : url($url, array('query' => isset($item['query']) ? $item['query'] : NULL, 'fragment' => isset($item['fragment']) ? $item['fragment'] : NULL, 'absolute' => TRUE));
-  if (is_array($field['display']) && isset($field['display']['url_cutoff']) && strlen($display_url) > $field['display']['url_cutoff']) {
+  if (is_array($field['display']) && !empty($field['display']['url_cutoff']) && strlen($display_url) > $field['display']['url_cutoff']) {
     $display_url = substr($display_url, 0, $field['display']['url_cutoff']) ."...";
   }
   $item['display_url'] = $display_url;
