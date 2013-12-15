@@ -96,6 +96,13 @@ function link_field_settings($op, $field) {
         '#size' => '46',
       );
 
+      $form['title_value_visibility'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Hide title if URL is empty'),
+        '#default_value' => isset($field['title_value_visibility']) ? $field['title_value_visibility'] : 0,
+        '#description' => t('Checking will hide the title when a URL is empty, leave un-checked to always display the title.'),
+      );
+
       // Add token module replacements if available
       if (module_exists('token')) {
         $form['tokens'] = array(
@@ -176,7 +183,7 @@ function link_field_settings($op, $field) {
       break;
 
     case 'save':
-      return array('attributes', 'display', 'url', 'title', 'title_value', 'enable_tokens', 'validate_url');
+      return array('attributes', 'display', 'url', 'title', 'title_value', 'title_value_visibility', 'enable_tokens', 'validate_url');
 
     case 'database columns':
       return array(

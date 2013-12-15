@@ -188,6 +188,12 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     unset($item['attributes']['title']);
   }
 
+  // Hide the display title the URL is empty and the "Hide title if URL is
+  // empty" has been checked.
+  if (empty($item['url']) && isset($field['title_value_visibility']) && $field['title_value_visibility'] == 1) {
+    unset($item['display_title']);
+  }
+
   // Remove empty attributes.
   $item['attributes'] = array_filter($item['attributes']);
 
