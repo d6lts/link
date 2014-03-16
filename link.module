@@ -63,7 +63,7 @@ function link_field_settings($op, $field) {
       $form['validate_url'] = array(
         '#type' => 'checkbox',
         '#title' => t('Validate URL'),
-        '#default_value' => isset($field['validate_url']) && ($field['validate_url'] !== '') ? $field['validate_url'] : TRUE,
+        '#default_value' => (isset($field['validate_url']) && $field['validate_url'] !== '') ? $field['validate_url'] : TRUE,
         '#description' => t('If checked, the URL field will be verified as a valid URL during validation.'),
       );
 
@@ -219,7 +219,7 @@ function link_field($op, &$node, $field, &$items, $teaser, $page) {
 
     case 'validate':
       $optional_field_found = FALSE;
-      if ($field['validate_url'] !== 0 || is_null($field['validate_url']) || !isset($field['validate_url'])) {
+      if (!isset($field['validate_url']) || $field['validate_url'] !== 0) {
         foreach ($items as $delta => $value) {
           _link_validate($items[$delta], $delta, $field, $node, $optional_field_found);
         }

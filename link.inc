@@ -91,7 +91,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
   $type = link_validate_url($item['url']);
   // If we can't determine the type of url, and we've been told not to validate it,
   // then we assume it's a LINK_EXTERNAL type for later processing. #357604
-  if ($type == FALSE && $field['validate_url'] === 0) {
+  if ($type == FALSE && isset($field['validate_url']) && $field['validate_url'] === 0) {
     $type = LINK_EXTERNAL;
   }
   $url = link_cleanup_url($item['url']);
@@ -107,7 +107,7 @@ function _link_sanitize(&$item, $delta, &$field, &$node) {
     $url = substr($url, 0, strpos($url, '?'));
   }
   // Save the new URL without the anchor or query.
-  if ($field['validate_url'] === 0) {
+  if (isset($field['validate_url']) && $field['validate_url'] === 0) {
     $item['url'] = check_plain($url);
   }
   else {
