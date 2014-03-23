@@ -287,6 +287,12 @@ class LinkValidateTest extends LinkValidateTestCase {
   function test_link_ftp() {
     $this->link_test_validate_url('ftp://www.example.com/');
   }
+  
+  // Validate that a custom tld can be used.
+  function test_link_custom_tld() {
+    variable_set('link_extra_domains', array('frog'));
+    $this->link_test_validate_url('http://www.example.frog/');
+  }
 }
 
 class LinkValidateTestNews extends LinkValidateTestCase {

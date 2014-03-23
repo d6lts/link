@@ -10,7 +10,7 @@ define('LINK_INTERNAL', 'internal');
 define('LINK_FRONT', 'front');
 define('LINK_EMAIL', 'email');
 define('LINK_NEWS', 'news');
-define('LINK_DOMAINS', 'aero|arpa|asia|biz|com|cat|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|local');
+define('LINK_DOMAINS', 'aero|arpa|asia|biz|build|com|cat|ceo|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|post|pro|tel|travel|mobi|local|xxx');
 // There are many other characters which are legal other than simply a-z - this includes them.
 // html_entity_decode() is buggy in php 4 - we'll put it back here for D7 when 5.x is assumed.
 /*define('LINK_ICHARS', (string) html_entity_decode(implode("", array(
@@ -498,4 +498,12 @@ function _link_content_generate($node, $field) {
     'title' => $title,
     'attributes' => array(),
   );
+}
+
+/**
+ * Returns the list of allowed domains, including domains added by admins via variable_set/$config.
+ */
+function _link_domains() {
+  $link_extra_domains = variable_get('link_extra_domains', array());
+  return empty($link_extra_domains) ? LINK_DOMAINS : LINK_DOMAINS . '|' . implode('|', $link_extra_domains);
 }

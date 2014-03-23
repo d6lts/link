@@ -238,7 +238,8 @@ function link_cleanup_url($url, $protocol = "http") {
     $protocol_match = preg_match("/^([a-z0-9][a-z0-9\.\-_]*:\/\/)/i", $url);
     if (empty($protocol_match)) {
       // But should there be? Add an automatic http:// if it starts with a domain name.
-      $domain_match = preg_match('/^(([a-z0-9]([a-z0-9\-_]*\.)+)('. LINK_DOMAINS .'|[a-z]{2}))/i', $url);
+      $link_domains = _link_domains();
+      $domain_match = preg_match('/^(([a-z0-9]([a-z0-9\-_]*\.)+)('. $link_domains .'|[a-z]{2}))/i', $url);
       if (!empty($domain_match)) {
         $url = $protocol ."://". $url;
       }
@@ -329,10 +330,11 @@ function link_validate_url($text) {
     "&#x00DF;", // ß
   )), ENT_QUOTES, 'UTF-8');
   $allowed_protocols = variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'));
-
+  $link_domains = _link_domains();
+  
   $protocol = '(('. implode("|", $allowed_protocols) .'):\/\/)';
   $authentication = '(([a-z0-9%' . $LINK_ICHARS . ']+(:[a-z0-9%'. $LINK_ICHARS . '!]*)?)?@)';
-  $domain = '(([a-z0-9' . $LINK_ICHARS_DOMAIN . ']([a-z0-9'. $LINK_ICHARS_DOMAIN . '\-_\[\]])*)(\.(([a-z0-9' . $LINK_ICHARS_DOMAIN . '\-_\[\]])+\.)*('. LINK_DOMAINS .'|[a-z]{2}))?)';
+  $domain = '(([a-z0-9' . $LINK_ICHARS_DOMAIN . ']([a-z0-9'. $LINK_ICHARS_DOMAIN . '\-_\[\]])*)(\.(([a-z0-9' . $LINK_ICHARS_DOMAIN . '\-_\[\]])+\.)*('. $link_domains .'|[a-z]{2}))?)';
   $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})';
   $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})';
   $port = '(:([0-9]{1,5}))';
