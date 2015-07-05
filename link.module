@@ -668,7 +668,7 @@ function _link_parse_url($url) {
  * Replaces the PHP parse_str() function.
  *
  * Because parse_str replaces the following characters in query parameters name
- * in order to maintain compability with deprecated register_globals directive:
+ * in order to maintain compatibility with deprecated register_globals directive:
  *
  *   - chr(32) ( ) (space)
  *   - chr(46) (.) (dot)
@@ -867,7 +867,7 @@ function link_field_process($element, $form_state, $complete_form) {
     );
   }
 
-  // If the title field is avaliable or there are field accepts multiple values
+  // If the title field is available or there are field accepts multiple values
   // then allow the individual field items display the required asterisk if needed.
   if (isset($element['title']) || isset($element['_weight'])) {
     // To prevent an extra required indicator, disable the required flag on the
