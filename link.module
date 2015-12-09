@@ -420,7 +420,6 @@ function _link_process(&$item, $delta, $field, $entity, $instance) {
 function _link_validate(&$item, $delta, $field, $entity, $instance, $langcode, &$optional_field_found, &$errors) {
   if ($item['url'] && !(isset($instance['default_value'][$delta]['url']) && $item['url'] === $instance['default_value'][$delta]['url'] && !$instance['required'])) {
     // Validate the link.
-    $langcode = !empty($entity) ? field_language($instance['entity_type'], $entity, $instance['field_name']) : LANGUAGE_NONE;
     if (!link_validate_url(trim($item['url']), $langcode)) {
       $errors[$field['field_name']][$langcode][$delta][] = array(
         'error' => 'link_required',
