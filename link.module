@@ -207,7 +207,7 @@ function link_field_instance_settings_form($field, $instance) {
   $form['attributes']['class'] = array(
     '#type' => 'textfield',
     '#title' => t('Additional CSS Class'),
-    '#description' => t('When output, this link will have this class attribute. Multiple classes should be separated by spaces.'),
+    '#description' => t('When output, this link will have this class attribute. Multiple classes should be separated by spaces. Only alphanumeric characters and hyphens are allowed'),
     '#default_value' => empty($instance['settings']['attributes']['class']) ? '' : $instance['settings']['attributes']['class'],
   );
   $form['attributes']['configurable_title'] = array(
