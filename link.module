@@ -726,6 +726,9 @@ function link_theme() {
     'link_formatter_link_plain' => array(
       'variables' => array('element' => NULL, 'field' => NULL),
     ),
+    'link_formatter_link_host' => array(
+      'variables' => array('element' => NULL),
+    ),
     'link_formatter_link_absolute' => array(
       'variables' => array('element' => NULL, 'field' => NULL),
     ),
@@ -911,6 +914,11 @@ function link_field_formatter_info() {
       'field types' => array('link_field'),
       'multiple values' => FIELD_BEHAVIOR_DEFAULT,
     ),
+    'link_host' => array(
+      'label' => t('Host, as plain text'),
+      'field types' => array('link_field'),
+      'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+    ),
     'link_url' => array(
       'label' => t('URL, as link'),
       'field types' => array('link_field'),
@@ -1039,6 +1047,14 @@ function theme_link_formatter_link_plain($vars) {
   }
   unset($link_options['url']);
   return empty($vars['element']['url']) ? check_plain($vars['element']['title']) : url($vars['element']['url'], $link_options);
+}
+
+/**
+ * Theme function for 'host' text field formatter.
+ */
+function theme_link_formatter_link_host($vars) {
+  $host = @parse_url($vars['element']['url']);
+  return isset($host['host']) ? check_plain($host['host']) : '';
 }
 
 /**
