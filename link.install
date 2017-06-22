@@ -11,6 +11,13 @@
  */
 
 /**
+ * Implements hook_uninstall().
+ */
+function link_uninstall() {
+  variable_del('link_extra_domains');
+}
+
+/**
  * Implements hook_field_schema().
  */
 function link_field_schema($field) {
