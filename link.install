@@ -13,6 +13,18 @@
 /**
  * Implements hook_uninstall().
  */
+function link_install() {
+  // Notify the user they may want to install token.
+  if (!module_exists('token')) {
+    drupal_set_message(t('If you install the <a href="!url" target="blank">Token</a>, static title can use any other entity field as its value.', array(
+      '!url' => 'http://drupal.org/project/token',
+    )));
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
 function link_uninstall() {
   variable_del('link_extra_domains');
 }
