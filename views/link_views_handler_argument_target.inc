@@ -125,8 +125,8 @@ class link_views_handler_argument_target extends views_handler_argument {
 
     asort($validate_types);
     $form['validate_type']['#options'] = $validate_types;
-    // Show this gadget if *anything* but 'none' is selected
 
+    // Show this gadget if *anything* but 'none' is selected
     $form['validate_fail'] = array(
       '#type' => 'select',
       '#title' => t('Action to take if argument does not validate'),

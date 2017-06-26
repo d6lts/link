@@ -35,6 +35,7 @@ function link_migrate_api() {
   );
 }
 
+// @codingStandardsIgnoreLine
 class MigrateLinkFieldHandler extends MigrateFieldHandler {
   public function __construct() {
     $this->registerTypes(array('link_field'));

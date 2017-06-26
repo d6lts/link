@@ -183,12 +183,9 @@ class LinkTokenTest extends LinkBaseTestClass {
     $field_name = $this->createLinkField('page', $settings);
 
     // So, having saved this field_name, let's see if it works...
-    //$this->acquireNodes(1);
-
-    //$node = node_load($this->nodes[0]->nid);
-
-    //$this->drupalGet('node/'. $this->nodes[0]->nid);
-
+    // $this->acquireNodes(1);
+    // $node = node_load($this->nodes[0]->nid);
+    // $this->drupalGet('node/'. $this->nodes[0]->nid);
     $edit = array();
     $test_link_url = 'http://www.example.com/test';
     $edit[$field_name . '[und][0][url]'] = $test_link_url;
@@ -233,7 +230,6 @@ class LinkTokenTest extends LinkBaseTestClass {
 
     $field = $this->createField($field_settings, 0);
     $field_name = $field['field_name'];
-    $field_db_info = content_database_info($field);
     $url_type = str_replace('_', '-', $this->content_types[0]->type);
 
     $edit = array('attributes[title]' => '[' . $field_name . '-title]',

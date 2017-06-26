@@ -58,8 +58,7 @@ class LinkEntityTokenTest extends LinkBaseTestClass {
         'label' => $this->randomName(),
       ),
     );
-    //$this->assert('pass', '<pre>' . print_r($token_url_tests, TRUE) . '<pre>');
-
+    // $this->assert('pass', '<pre>' . print_r($token_url_tests, TRUE) . '<pre>');
     foreach ($token_url_tests as &$input) {
       $this->drupalGet('node/add/page');
   
@@ -122,8 +121,8 @@ class LinkEntityTokenTest extends LinkBaseTestClass {
         'label' => $this->randomName(),
       ),
     );
-    //$this->assert('pass', '<pre>' . print_r($token_url_tests, TRUE) . '<pre>');
 
+//$this->assert('pass', '<pre>' . print_r($token_url_tests, TRUE) . '<pre>');
     foreach ($token_url_tests as &$input) {
       $this->drupalGet('node/add/page');
   
@@ -142,7 +141,6 @@ class LinkEntityTokenTest extends LinkBaseTestClass {
     
     foreach ($token_url_tests as $index => $input2) {
       $node = node_load($index);
-      $node_array = node_view($node, 'full');
       $this->assertNotEqual(NULL, $node, "Do we have a node?");
       $this->assertEqual($node->nid, $index, "Test that we have a node.");
       $token_name = '[node:' . str_replace('_', '-', $field_name) . ':url]';

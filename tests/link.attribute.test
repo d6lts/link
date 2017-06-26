@@ -76,7 +76,7 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
     // Now add a singleton field.
     $single_field_name_friendly = $this->randomName(20);
     $single_field_name_machine = strtolower($this->randomName(10));
-    $single_field_name = 'field_' . $single_field_name_machine;
+
     $edit = array(
       'fields[_add_new_field][label]' => $single_field_name_friendly,
       'fields[_add_new_field][field_name]' => $single_field_name_machine,
@@ -101,7 +101,7 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
     $this->assertTrue($type_exists, 'The new content type has been created in the database.');
 
     $permission = 'create ' . $content_type_machine . ' content';
-    $permission_edit = 'edit ' . $content_type_machine . ' content';
+
     // Reset the permissions cache.
     $this->checkPermissions(array($permission), TRUE);
 
@@ -168,7 +168,6 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
 
   protected function createNodeTypeUser($content_type_machine) {
     $permission = 'create ' . $content_type_machine . ' content';
-    $permission_edit = 'edit ' . $content_type_machine . ' content';
     // Reset the permissions cache.
     $this->checkPermissions(array($permission), TRUE);
 
@@ -243,7 +242,7 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
       ),
     );
 
-    foreach ($link_tests as $key => $link_test) {
+    foreach ($link_tests as $link_test) {
       $link_text = $link_test['text'];
       $link_url = $link_test['url'];
       $this->createNodeForTesting($content_type_machine, $content_type_friendly, $single_field_name_machine, $link_text, $link_url);
@@ -329,7 +328,7 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
       ),
     );
 
-    foreach ($link_tests as $key => $link_test) {
+    foreach ($link_tests as $link_test) {
       $link_text = $link_test['text'];
       $link_url = $link_test['url'];
       $this->createNodeForTesting($content_type_machine, $content_type_friendly, $single_field_name_machine, $link_text, $link_url);
@@ -379,7 +378,7 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
       ),
     );
 
-    foreach ($link_tests as $key => $link_test) {
+    foreach ($link_tests as $link_test) {
       $link_text = $link_test['text'];
       $link_url = $link_test['url'];
       $this->createNodeForTesting($content_type_machine, $content_type_friendly, $single_field_name_machine, $link_text, $link_url);
@@ -430,7 +429,7 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
       ),
     );
 
-    foreach ($link_tests as $key => $link_test) {
+    foreach ($link_tests as $link_test) {
       $link_text = $link_test['text'];
       $link_url = $link_test['url'];  
       $this->createNodeForTesting($content_type_machine, $content_type_friendly, $single_field_name_machine, $link_text, $link_url);
@@ -482,7 +481,7 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
       ),
     );
 
-    foreach ($link_tests as $key => $link_test) {
+    foreach ($link_tests as $link_test) {
       $link_text = $link_test['text'];
       $link_url = $link_test['url'];
       $this->createNodeForTesting($content_type_machine, $content_type_friendly, $single_field_name_machine, $link_text, $link_url);

@@ -223,8 +223,6 @@ class LinkValidateTest extends LinkValidateTestCase {
     );
 
     $field = $this->createField($field_settings, 0);
-    //$this->fail('<pre>'. print_r($field, TRUE) .'</pre>');
-    $field_db_info = content_database_info($field);
 
     $this->acquireNodes(2);
 
@@ -239,7 +237,8 @@ class LinkValidateTest extends LinkValidateTestCase {
     $edit[$field['field_name'] . '[0][title]'] = $title;
 
     $this->drupalPost('node/' . $this->nodes[0]->nid . '/edit', $edit, t('Save'));
-    //$this->pass($this->content);
+    // $this->pass($this->content);
+    // @codingStandardsIgnoreLine
     $this->assertNoText(t('The value %value provided for %field is not a valid URL.', array('%field' => $name, '%value' => trim($url))));
 
     // Make sure we get a new version!
@@ -261,8 +260,7 @@ class LinkValidateTest extends LinkValidateTestCase {
     // url() function.  But we should have a test that makes sure it continues
     // to work.
     $this->assertNoRaw($url, 'Make sure Javascript does not display.');
-    //$this->fail($this->content);
-
+    // $this->fail($this->content);
   }
 
   // Validate that '<front>' is a valid url.
