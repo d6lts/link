@@ -10,7 +10,7 @@ define('LINK_INTERNAL', 'internal');
 define('LINK_FRONT', 'front');
 define('LINK_EMAIL', 'email');
 define('LINK_NEWS', 'news');
-define('LINK_DOMAINS', 'aero|arpa|asia|biz|build|com|cat|ceo|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|post|pro|tel|travel|mobi|local|xxx|eus|partners');
+define('LINK_DOMAINS', variable_get('link_domains', 'aero|arpa|asia|biz|build|com|cat|ceo|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|post|pro|tel|travel|mobi|local|xxx|eus|partners'));
 
 define('LINK_TARGET_DEFAULT', 'default');
 define('LINK_TARGET_NEW_WINDOW', '_blank');
@@ -21,6 +21,36 @@ define('LINK_TARGET_USER', 'user');
  * Maximum URLs length - needs to match value in link.install.
  */
 define('LINK_URL_MAX_LENGTH', 2048);
+
+function link_menu() {
+
+  $items['admin/config/content/link'] = array(
+    'title' => 'Link',
+    'description' => 'Configure options for Link.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('link_admin'),
+    'access arguments' => array('administer'),
+  );
+
+  return $items;
+}
+
+/**
+ * Link Admin.
+ */
+function link_admin($form) {
+
+  $link_domains_default = 'aero|arpa|asia|biz|build|com|cat|ceo|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|post|pro|tel|travel|mobi|local|xxx|eus';
+
+  $form['link_domains'] = array(
+    '#title' => t('Link Domains'),
+    '#type' => 'textarea',
+    '#description' => t('Insert link domains with format: <b>value|value|value</b><br><br> Default:<br><b>' . $link_domains_default . '</b>'),
+    '#default_value' => variable_get('link_domains', $link_domains_default),
+  );
+
+  return system_settings_form($form);
+}
 
 /**
  * Implements hook_help().
