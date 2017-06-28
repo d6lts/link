@@ -29,7 +29,6 @@ function link_install() {
  */
 function link_uninstall() {
   variable_del('link_extra_domains');
-  variable_del('link_domains');
 }
 
 /**
