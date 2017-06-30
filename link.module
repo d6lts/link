@@ -531,10 +531,11 @@ function _link_sanitize(&$item, $delta, &$field, $instance, &$entity) {
 
   if (!empty($url_parts['url'])) {
     $item['url'] = url($url_parts['url'],
-      array('query' => isset($url_parts['query']) ? $url_parts['query'] : NULL,
-      'fragment' => isset($url_parts['fragment']) ? $url_parts['fragment'] : NULL,
-      'absolute' => !empty($instance['settings']['absolute_url']),
-      'html' => TRUE,
+      array(
+        'query' => isset($url_parts['query']) ? $url_parts['query'] : NULL,
+        'fragment' => isset($url_parts['fragment']) ? $url_parts['fragment'] : NULL,
+        'absolute' => !empty($instance['settings']['absolute_url']),
+        'html' => TRUE,
       )
     );
   }
