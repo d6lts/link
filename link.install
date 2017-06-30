@@ -25,17 +25,10 @@ function link_install() {
 }
 
 /**
- * Removes unused link_extra_domains variable.
- */
-function link_update_7002() {
-  variable_del('link_extra_domains');
-}
-
-/**
  * Implements hook_uninstall().
  */
 function link_uninstall() {
-  variable_del('link_allowed_domains');
+  variable_del('link_extra_domains');
 }
 
 /**
