@@ -1495,7 +1495,7 @@ function link_field_property_info_callback(&$info, $entity_type, $field, $instan
  * @see link_field_property_info_callback()
  */
 function link_field_item_create() {
-  return array('title' => NULL, 'url' => NULL);
+  return array('title' => NULL, 'url' => NULL, 'display_url' => NULL);
 }
 
 /**
@@ -1517,6 +1517,11 @@ function link_field_item_property_info() {
     'label' => t('The attributes of the link.'),
     'setter callback' => 'entity_property_verbatim_set',
     'getter callback' => 'link_attribute_property_get',
+  );
+  $properties['display_url'] = array(
+    'type' => 'uri',
+    'label' => t('The full URL of the link.'),
+    'setter callback' => 'entity_property_verbatim_set',
   );
   return $properties;
 }
