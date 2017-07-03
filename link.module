@@ -126,9 +126,9 @@ function link_field_instance_settings_form($field, $instance) {
 
   $form['title_value'] = array(
     '#type' => 'textfield',
-    '#title' => t('Static title'),
+    '#title' => t('Static or default title'),
     '#default_value' => isset($instance['settings']['title_value']) ? $instance['settings']['title_value'] : '',
-    '#description' => t('This title will always be used if &ldquo;Static Title&rdquo; is selected above.'),
+    '#description' => t('This title will 1) always be used if "Static Title" is selected above, or 2) used if "Optional title" is selected above and no title is entered when creating content.'),
   );
 
   $form['title_label_use_field_label'] = array(
@@ -578,8 +578,13 @@ function _link_sanitize(&$item, $delta, &$field, $instance, &$entity) {
     }
   }
   // Use the title defined by the user at the widget level.
-  elseif (isset($item['title'])) {
+  elseif (drupal_strlen(trim($item['title']))) {
     $title = $item['title'];
+  }
+  // Use the static title if a user-defined title is optional and a static title
+  // has been defined.
+  elseif ($instance['settings']['title'] == 'optional' && drupal_strlen(trim($instance['settings']['title_value']))) {
+    $title = $instance['settings']['title_value'];
   }
   else {
     $title = '';
