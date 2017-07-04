@@ -113,6 +113,7 @@ function link_field_instance_settings_form($field, $instance) {
     'optional' => t('Optional Title'),
     'required' => t('Required Title'),
     'value' => t('Static Title'),
+    'select' => t('Selected Title'),
     'none' => t('No Title'),
   );
 
@@ -129,6 +130,23 @@ function link_field_instance_settings_form($field, $instance) {
     '#title' => t('Static or default title'),
     '#default_value' => isset($instance['settings']['title_value']) ? $instance['settings']['title_value'] : '',
     '#description' => t('This title will 1) always be used if "Static Title" is selected above, or 2) used if "Optional title" is selected above and no title is entered when creating content.'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="instance[settings][title]"]' => array('value' => 'value'),
+      ),
+    ),
+  );
+
+  $form['title_allowed_values'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Title allowed values'),
+    '#default_value' => isset($instance['settings']['title_allowed_values']) ? $instance['settings']['title_allowed_values'] : '',
+    '#description' => t('When using "Selected Title", you can allow users to select the title from a limited set of values (eg. Home, Office, Other). Enter here all possible values that title can take, one value per line.'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="instance[settings][title]"]' => array('value' => 'select'),
+      ),
+    ),
   );
 
   $form['title_label_use_field_label'] = array(
@@ -247,7 +265,11 @@ function link_field_instance_settings_form($field, $instance) {
  */
 function link_field_settings_form_validate($element, &$form_state, $complete_form) {
   if ($form_state['values']['instance']['settings']['title'] === 'value' && empty($form_state['values']['instance']['settings']['title_value'])) {
-    form_set_error('title_value', t('A default title must be provided if the title is a static value.'));
+    form_set_error('instance][settings][title_value', t('A default title must be provided if the title is a static value.'));
+  }
+  if ($form_state['values']['instance']['settings']['title'] === 'select'
+      && empty($form_state['values']['instance']['settings']['title_allowed_values'])) {
+    form_set_error('instance][settings][title_allowed_values', t('You must enter one or more allowed values for link Title, the title is a selected value.'));
   }
   if (!empty($form_state['values']['instance']['settings']['display']['url_cutoff']) && !is_numeric($form_state['values']['instance']['settings']['display']['url_cutoff'])) {
     form_set_error('display', t('URL Display Cutoff value must be numeric.'));
@@ -878,7 +900,7 @@ function link_field_process($element, $form_state, $complete_form) {
     '#required' => ($element['#delta'] == 0 && $settings['url'] !== 'optional') ? $element['#required'] : FALSE,
     '#default_value' => isset($element['#value']['url']) ? $element['#value']['url'] : NULL,
   );
-  if ($settings['title'] !== 'none' && $settings['title'] !== 'value') {
+  if (in_array($settings['title'], array('optional', 'required'))) {
     // Figure out the label of the title field.
     if (!empty($settings['title_label_use_field_label'])) {
       // Use the element label as the title field label.
@@ -903,6 +925,17 @@ function link_field_process($element, $form_state, $complete_form) {
       '#description' => t('The link title is limited to @maxlength characters maximum.', array('@maxlength' => $title_maxlength)),
       '#required' => ($settings['title'] == 'required' && (($element['#delta'] == 0 && $element['#required']) || !empty($element['#value']['url']))) ? TRUE : FALSE,
       '#default_value' => isset($element['#value']['title']) ? $element['#value']['title'] : NULL,
+    );
+  }
+  elseif ($settings['title'] == 'select') {
+    $options = array('' => t('<none>'));
+    $options = drupal_map_assoc(array_filter(explode("\n", str_replace("\r", "\n", trim($settings['title_allowed_values'])))));
+    $element['title'] = array(
+      '#type' => 'select',
+      '#title' => t('Title'),
+      '#description' => t('Select the a title for this link.'),
+      '#default_value' => isset($element['#value']['title']) ? $element['#value']['title'] : NULL,
+      '#options' => $options,
     );
   }
 
