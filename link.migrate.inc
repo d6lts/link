@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Support for migrate module.
@@ -24,6 +23,10 @@
  *      ->arguments($link_args);
  * @endcode
  */
+
+if (!class_exists('MigrateFieldHandler')) {
+  return;
+}
 
 /**
  * Implements hook_migrate_api().
