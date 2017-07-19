@@ -1311,6 +1311,8 @@ function link_cleanup_url($url, $protocol = 'http') {
  *   True if a valid link, FALSE otherwise.
  */
 function link_validate_url($text, $langcode = NULL) {
+
+  $text = _link_clean_relative($text);
   $text = link_cleanup_url($text);
   $type = link_url_type($text);
 
@@ -1337,6 +1339,31 @@ function link_validate_url($text, $langcode = NULL) {
   }
 
   return $flag;
+}
+
+/**
+ * Cleaner of relatives urls.
+ *
+ * @param string $url
+ *   The url to clean up the relative protocol.
+ */
+function _link_clean_relative($url) {
+  $check = substr($url, 0, 2);
+  if (isset($_SERVER['HTTPS']) &&
+    ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
+    isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+    $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+    $protocol = 'https://';
+  }
+  else {
+    $protocol = 'http://';
+  }
+
+  if ($check == '//') {
+    $url = str_replace('//', $protocol, $url);
+  }
+
+  return $url;
 }
 
 /**
@@ -1438,7 +1465,6 @@ function link_url_type($text) {
   $ipv4 = '(?:[0-9]{1,3}(\.[0-9]{1,3}){3})';
   $ipv6 = '(?:[0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})';
   $port = '(?::([0-9]{1,5}))';
-
   // Pattern specific to external links.
   $external_pattern = '/^' . $protocol . '?' . $authentication . '?(' . $domain . '|' . $ipv4 . '|' . $ipv6 . ' |localhost)' . $port . '?';
 

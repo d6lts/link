@@ -491,7 +491,6 @@ class LinkValidateUrlLight extends DrupalWebTestCase {
       'http://www.ex ample.com/',
       'http://25.0.0/', // bad ip!
       'http://4827.0.0.2/',
-      '//www.example.com/',
       'http://www.testß.com/', // ß not allowed in domain names!
       'http://.www.foo.bar./', // Bad TLD.
       //'http://www.-fudge.com/', // domains can't have sections starting with a dash.
