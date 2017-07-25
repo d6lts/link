@@ -390,10 +390,10 @@ function link_field_widget_form(&$form, &$form_state, $field, $instance, $langco
  * Implements hook_field_widget_error().
  */
 function link_field_widget_error($element, $error, $form, &$form_state) {
-  if ($error['error_element']['title']) {
+  if (!empty($error['error_element']['title'])) {
     form_error($element['title'], $error['message']);
   }
-  elseif ($error['error_element']['url']) {
+  elseif (!empty($error['error_element']['url'])) {
     form_error($element['url'], $error['message']);
   }
 }
