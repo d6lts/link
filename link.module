@@ -1372,6 +1372,11 @@ function link_validate_url($text, $langcode = NULL) {
  *   The url to clean up the relative protocol.
  */
 function _link_clean_relative($url) {
+
+  if ($url[0] == '/' && $url[1] != '/') {
+    $url = substr($url, 1);
+  }
+
   $check = substr($url, 0, 2);
   if (isset($_SERVER['HTTPS']) &&
     ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
