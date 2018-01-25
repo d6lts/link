@@ -824,6 +824,9 @@ function link_theme() {
         'field' => NULL,
       ),
     ),
+    'link_formatter_link_no_protocol' => array(
+      'variables' => array('element' => NULL, 'field' => NULL),
+    ),
     'link_formatter_link_title_plain' => array(
       'variables' => array('element' => NULL, 'field' => NULL),
     ),
@@ -1050,6 +1053,11 @@ function link_field_formatter_info() {
         'strip_www' => FALSE,
       ),
     ),
+    'link_no_protocol' => array(
+      'label' => t('URL with the protocol removed'),
+      'field types' => array('link_field'),
+      'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+    ),
     'link_short' => array(
       'label' => t('Short, as link with title "Link"'),
       'field types' => array('link_field'),
@@ -1189,10 +1197,26 @@ function theme_link_formatter_link_domain($vars) {
 }
 
 /**
+ * Formats a link without the http:// or https://.
+ */
+function theme_link_formatter_link_no_protocol($vars) {
+  $link_options = $vars['element'];
+  unset($link_options['title']);
+  unset($link_options['url']);
+  // We drop any scheme of the url.
+  $scheme = parse_url($vars['element']['url']);
+  $search = '/' . preg_quote($scheme['scheme'] . '://', '/') . '/';
+  $replace = '';
+  $display_url = preg_replace($search, $replace, $vars['element']['url'], 1);
+
+  return $vars['element']['url'] ? l($display_url, $vars['element']['url'], $link_options) : '';
+}
+
+/**
  * Formats a link's title as plain text.
  */
 function theme_link_formatter_link_title_plain($vars) {
-  return empty($vars['element']['title']) ? '' : check_plain($vars['element']['title']);
+  return empty($vars['element']['title']) ? '' : check_plain(decode_entities($vars['element']['title'], ENT_QUOTES));
 }
 
 /**
