@@ -1135,8 +1135,8 @@ function theme_link_formatter_link_default($vars) {
   unset($link_options['title']);
   unset($link_options['url']);
 
-  if (isset($link_options['attributes']['class'])) {
-    $link_options['attributes']['class'] = array($link_options['attributes']['class']);
+  if (isset($link_options['attributes']['class']) && !is_array($link_options['attributes']['class'])) {
+    $link_options['attributes']['class'] = explode(' ', $link_options['attributes']['class']);
   }
   // Display a normal link if both title and URL are available.
   if (!empty($vars['element']['title']) && !empty($vars['element']['url'])) {
@@ -1373,6 +1373,10 @@ function link_validate_url($text, $langcode = NULL) {
         $normal_path = $parsed_link;
       }
       $flag = drupal_valid_path($normal_path);
+      if (!$flag) {
+        $lookup_path = drupal_lookup_path('source', $text);
+        $flag = isset($lookup_path) ? TRUE : FALSE;
+      }
     }
     if (!$flag) {
       $flag = file_exists($normal_path);
