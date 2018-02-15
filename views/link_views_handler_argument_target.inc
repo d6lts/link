@@ -15,11 +15,11 @@ class link_views_handler_argument_target extends views_handler_argument {
   /**
    * Provide defaults for the argument when a new one is created.
    */
-  public function options(&$options) {
-    // @codingStandardsIgnoreEnd
-    parent::options($options);
-  }
+  function option_definition() {
+    $options = parent::option_definition();
 
+    return $options;
+  }
   /**
    * Provide a default options form for the argument.
    *
