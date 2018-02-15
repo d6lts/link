@@ -38,7 +38,7 @@ class LinkEntityTokenTest extends LinkBaseTestClass {
       'instance[settings][enable_tokens]' => 0,
     );
     $field_name = $this->createLinkField('page',
-                                        $settings);
+      $settings);
 
     // Create page form.
     $this->drupalGet('node/add/page');
@@ -88,7 +88,7 @@ class LinkEntityTokenTest extends LinkBaseTestClass {
       $this->assertEqual($node->nid, $index, "Test that we have a node.");
       $token_name = '[node:' . str_replace('_', '-', $field_name) . ':url]';
       $assert_data = token_replace($token_name,
-                      array('node' => $node));
+        array('node' => $node));
       $this->assertEqual($input2['href'], $assert_data, "Test that the url token has been set to " . $input2['href'] . ' - ' . $assert_data);
     }
   }
@@ -105,7 +105,7 @@ class LinkEntityTokenTest extends LinkBaseTestClass {
       'instance[settings][enable_tokens]' => 0,
     );
     $field_name = $this->createLinkField('page',
-                                        $settings);
+      $settings);
 
     // Create page form.
     $this->drupalGet('node/add/page');
@@ -156,7 +156,7 @@ class LinkEntityTokenTest extends LinkBaseTestClass {
       $this->assertEqual($node->nid, $index, "Test that we have a node.");
       $token_name = '[node:' . str_replace('_', '-', $field_name) . ':url]';
       $assert_data = token_replace($token_name,
-                      array('node' => $node));
+        array('node' => $node));
       $this->assertEqual($input2['href'], $assert_data, "Test that the url token has been set to " . $input2['href'] . ' - ' . $assert_data);
     }
   }

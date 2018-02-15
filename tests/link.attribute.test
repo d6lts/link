@@ -9,6 +9,7 @@
  * Attribute Crud Test.
  */
 class LinkAttributeCrudTest extends DrupalWebTestCase {
+
   private $zebra;
 
   protected $permissions = array(
@@ -40,7 +41,10 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
     parent::setup('field_ui', 'link');
     $this->zebra = 0;
     // Create and login user.
-    $this->web_user = $this->drupalCreateUser(array('administer content types', 'administer fields'));
+    $this->web_user = $this->drupalCreateUser(array(
+      'administer content types',
+      'administer fields',
+    ));
     $this->drupalLogin($this->web_user);
   }
 
@@ -63,8 +67,8 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
     $zebra_string = ($this->zebra % 2 == 0) ? 'even' : 'odd';
     $cssFieldLocator = 'field-' . str_replace('_', '-', $field_name);
     $this->assertPattern('@<div class="field field-type-link ' . $cssFieldLocator . '".*<div class="field-item ' . $zebra_string . '">\s*' . $link_value . '\s*</div>@is',
-                         $message,
-                         $group);
+      $message,
+      $group);
   }
 
   /**
@@ -140,7 +144,10 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
     );
 
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertText(t('@content_type_friendly @title has been created', array('@content_type_friendly' => $content_type_friendly, '@title' => $title)));
+    $this->assertText(t('@content_type_friendly @title has been created', array(
+      '@content_type_friendly' => $content_type_friendly,
+      '@title' => $title,
+    )));
 
     $this->drupalGet('node/add/' . $content_type_machine);
 
@@ -153,7 +160,10 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
 
     // Now we can fill in the second item in the multivalue field and save.
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertText(t('@content_type_friendly @title has been created', array('@content_type_friendly' => $content_type_friendly, '@title' => $title)));
+    $this->assertText(t('@content_type_friendly @title has been created', array(
+      '@content_type_friendly' => $content_type_friendly,
+      '@title' => $title,
+    )));
 
     $this->assertText('Display');
     $this->assertLinkByHref('http://www.example.com');
@@ -222,7 +232,10 @@ class LinkAttributeCrudTest extends DrupalWebTestCase {
     }
 
     $this->drupalPost(NULL, $edit, t('Save'));
-    $this->assertText(t('@content_type_friendly @title has been created', array('@content_type_friendly' => $content_type_friendly, '@title' => $node_title)));
+    $this->assertText(t('@content_type_friendly @title has been created', array(
+      '@content_type_friendly' => $content_type_friendly,
+      '@title' => $node_title,
+    )));
 
   }
 

@@ -9,6 +9,7 @@
  * Base Test Class.
  */
 class LinkBaseTestClass extends DrupalWebTestCase {
+
   protected $permissions = array(
     'access content',
     'administer content types',

@@ -45,7 +45,10 @@ class LinkContentCrudTest extends DrupalWebTestCase {
     $content_type_machine = strtolower($this->randomName(10));
 
     // Create and login user.
-    $this->web_user = $this->drupalCreateUser(array('administer content types', 'administer fields'));
+    $this->web_user = $this->drupalCreateUser(array(
+      'administer content types',
+      'administer fields',
+    ));
     $this->drupalLogin($this->web_user);
 
     $this->drupalGet('admin/structure/types');

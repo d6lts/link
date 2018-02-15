@@ -40,7 +40,7 @@ class LinkTokenTest extends LinkBaseTestClass {
       'instance[settings][enable_tokens]' => 1,
     );
     $field_name = $this->createLinkField('page',
-                                        $settings);
+      $settings);
 
     // Create page form.
     $this->drupalGet('node/add/page');
@@ -214,7 +214,7 @@ class LinkTokenTest extends LinkBaseTestClass {
     // Make sure we get a new version!
     // $node = node_load($this->nodes[0]->nid, NULL, TRUE);.
     $this->assertText(t('Basic page @title has been updated.',
-                        array('@title' => $name)));
+      array('@title' => $name)));
 
     // $this->drupalGet('node/'. $node->nid);.
     $this->assertText($title, 'Make sure the link title/text shows');
@@ -258,7 +258,7 @@ class LinkTokenTest extends LinkBaseTestClass {
     );
 
     $this->drupalPost('admin/content/node-type/' . $url_type . '/fields/' . $field['field_name'],
-                      $edit, t('Save field settings'));
+      $edit, t('Save field settings'));
     $this->assertText(t('Saved field @field_name', array('@field_name' => $field['field_name'])));
 
     // So, having saved this field_name, let's see if it works...
@@ -278,10 +278,10 @@ class LinkTokenTest extends LinkBaseTestClass {
     // Make sure we get a new version!
     $node = node_load($this->nodes[0]->nid, NULL, TRUE);
     $this->assertText(t('@type @title has been updated.',
-                        array(
-                          '@title' => $node->title,
-                          '@type' => $this->content_types[0]->name,
-                        )));
+      array(
+        '@title' => $node->title,
+        '@type' => $this->content_types[0]->name,
+      )));
 
     $this->drupalGet('node/' . $node->nid);
     $this->assertText($title, 'Make sure the link title/text shows');
