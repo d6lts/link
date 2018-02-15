@@ -1134,8 +1134,8 @@ function theme_link_formatter_link_default($vars) {
   unset($link_options['title']);
   unset($link_options['url']);
 
-  if (isset($link_options['attributes']['class']) && !is_array($link_options['attributes']['class'])) {
-    $link_options['attributes']['class'] = explode(' ', $link_options['attributes']['class']);
+  if (isset($link_options['attributes']['class'])) {
+    $link_options['attributes']['class'] = array($link_options['attributes']['class']);
   }
   // Display a normal link if both title and URL are available.
   if (!empty($vars['element']['title']) && !empty($vars['element']['url'])) {
