@@ -1374,10 +1374,6 @@ function link_validate_url($text, $langcode = NULL) {
         $normal_path = $parsed_link;
       }
       $flag = drupal_valid_path($normal_path);
-      if (!$flag) {
-        $lookup_path = drupal_lookup_path('source', $text);
-        $flag = isset($lookup_path) ? TRUE : FALSE;
-      }
     }
     if (!$flag) {
       $flag = file_exists($normal_path);
