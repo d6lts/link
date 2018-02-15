@@ -953,7 +953,6 @@ function link_field_process($element, $form_state, $complete_form) {
     );
   }
   elseif ($settings['title'] == 'select') {
-    $options = array('' => t('<none>'));
     $options = drupal_map_assoc(array_filter(explode("\n", str_replace("\r", "\n", trim($settings['title_allowed_values'])))));
     $element['title'] = array(
       '#type' => 'select',

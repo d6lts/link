@@ -264,8 +264,6 @@ class LinkTokenTest extends LinkBaseTestClass {
     // So, having saved this field_name, let's see if it works...
     $this->acquireNodes(1);
 
-    $node = node_load($this->nodes[0]->nid);
-
     $this->drupalGet('node/' . $this->nodes[0]->nid);
 
     $edit = array();
