@@ -1216,7 +1216,7 @@ function theme_link_formatter_link_no_protocol($vars) {
  * Formats a link's title as plain text.
  */
 function theme_link_formatter_link_title_plain($vars) {
-  return empty($vars['element']['title']) ? '' : check_plain(decode_entities($vars['element']['title'], ENT_QUOTES));
+  return empty($vars['element']['title']) ? '' : check_plain(decode_entities($vars['element']['title']));
 }
 
 /**
