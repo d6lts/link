@@ -262,13 +262,13 @@ function link_cleanup_url($url, $protocol = "http") {
 function _link_html_entity_decode($html_string, $quote_style = ENT_COMPAT, $charset) {
   if (defined('PHP_VERSION')) {
     $version = explode('.', PHP_VERSION);
-    if ($version[0] == '5') {
+    if ((int) $version[0] >= 5) {
       return html_entity_decode($html_string, $quote_style, $charset); // PHP 5, use default.
     }
   }
   else {
     $version = explode('.', PHP_VERSION);
-    if ($version[0] == '5') {
+    if ((int) $version[0] >= 5) {
       return html_entity_decode($html_string, $quote_style, $charset);
     }
   }
