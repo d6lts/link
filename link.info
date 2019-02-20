@@ -5,9 +5,3 @@ package = CCK
 core = 6.x
 files[] = link.migrate.inc
 
-
-; Information added by Drupal 6 LTS vendors on 2019-02-20
-version = "6.x-2.13"
-core = "6.x"
-project = "link"
-datestamp = "1550686899"
