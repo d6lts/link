@@ -43,6 +43,10 @@ function _link_validate(&$item, $delta, $field, $node, &$optional_field_found) {
   // neither of these keys are certain to be set
   $test = $item + array('url' => NULL, 'title' => NULL);
 
+  if (isset($test['attributes']) && is_string($test['attributes'])) {
+    form_set_error($field['field_name'] .']['. $delta .'][url', t('String values are not acceptable for attributes.'));
+  }
+
   if ($test['url'] && !(isset($field['widget']['default_value'][$delta]['url']) && $test['url'] == $field['widget']['default_value'][$delta]['url'] && !$field['required'])) {
     // Validate the link.
     if (link_validate_url(trim($test['url'])) == FALSE) {
